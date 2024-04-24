@@ -5,7 +5,11 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"os"
+	"strings"
+
+	"cli-test/cmd/env"
 
 	"github.com/spf13/cobra"
 )
@@ -36,6 +40,7 @@ var shellCmd = &cobra.Command{
 	Long: `A simple shell, holding token to use interactive commands -- the long version
 	Examples go here.
 `,
+
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -46,12 +51,13 @@ var shellCmd = &cobra.Command{
 			scanner.Split(bufio.ScanLines)
 			scanner.Scan()
 			cmd.Print([]string{scanner.Text()})
-			cmd.Print("You entered: " + scanner.Text() + "\n")
+			cmd.Print("You entered: ", []string{scanner.Text()}, "\n")
 			if scanner.Err() != nil {
 				return scanner.Err()
 			}
-			text := scanner.Text()
-			newCmd, args, err := cmd.Find([]string{text})
+			text := strings.Fields(scanner.Text())
+			newCmd, args, err := cmd.Find(text)
+			//fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
 			if err != nil {
 				cmd.Println(err)
 				continue
@@ -59,8 +65,13 @@ var shellCmd = &cobra.Command{
 			if newCmd == cmd {
 				continue
 			}
+			fmt.Println("newCmd: ", newCmd.Name(), "args: ", args)
+			//newCmd.SetArgs(args)
+			err = newCmd.RunE(newCmd, args)
 
-			return newCmd.RunE(newCmd, args)
+			if err != nil {
+				cmd.Println(err)
+			}
 
 		}
 	},
@@ -100,6 +111,8 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	shellCmd.AddCommand(shellQuitCmd)
+	env.EnvCmd.AddCommand(env.AddCmd)
+	shellCmd.AddCommand(env.EnvCmd)
 	rootCmd.AddCommand(shellCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
