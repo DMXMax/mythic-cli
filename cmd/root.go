@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"cli-test/cmd/env"
+	"cli-test/cmd/roll"
 
 	"github.com/spf13/cobra"
 )
@@ -57,7 +58,7 @@ var shellCmd = &cobra.Command{
 			}
 			text := strings.Fields(scanner.Text())
 			newCmd, args, err := cmd.Find(text)
-			//fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
+			fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
 			if err != nil {
 				cmd.Println(err)
 				continue
@@ -65,7 +66,6 @@ var shellCmd = &cobra.Command{
 			if newCmd == cmd {
 				continue
 			}
-			fmt.Println("newCmd: ", newCmd.Name(), "args: ", args)
 			//newCmd.SetArgs(args)
 			err = newCmd.RunE(newCmd, args)
 
@@ -114,5 +114,6 @@ func init() {
 	env.EnvCmd.AddCommand(env.AddCmd)
 	shellCmd.AddCommand(env.EnvCmd)
 	rootCmd.AddCommand(shellCmd)
+	shellCmd.AddCommand(roll.RollCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
