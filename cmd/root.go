@@ -47,12 +47,12 @@ var shellCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for {
-			cmd.Print("shell> ")
+			fmt.Print("shell> ")
 			scanner := bufio.NewScanner(os.Stdin)
 			scanner.Split(bufio.ScanLines)
 			scanner.Scan()
-			cmd.Print([]string{scanner.Text()})
-			cmd.Print("You entered: ", []string{scanner.Text()}, "\n")
+			fmt.Print([]string{scanner.Text()})
+			fmt.Print("You entered: ", []string{scanner.Text()}, "\n")
 			if scanner.Err() != nil {
 				return scanner.Err()
 			}
