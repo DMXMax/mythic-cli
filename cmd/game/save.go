@@ -10,7 +10,7 @@ import (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var SaveCmd = &cobra.Command{
+var saveCmd = &cobra.Command{
 	Use:   "save",
 	Short: "save a game to a file",
 	Long:  `Save a game to a given file name. Currently it will overwrite any existing file.`,
@@ -19,7 +19,8 @@ var SaveCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		file, err := os.OpenFile(g.Name+".gob", os.O_CREATE|os.O_WRONLY, 0644)
+		filename := g.Name + ".gob"
+		file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -29,12 +30,12 @@ var SaveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Game saved to %s.json\n", g.Name)
+		fmt.Printf("Game saved to %s\n", filename)
 
 		return nil
 	},
 }
 
 func init() {
-	GameCmd.AddCommand(NewCmd)
+	GameCmd.AddCommand(newCmd)
 }

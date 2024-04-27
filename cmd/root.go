@@ -9,13 +9,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DMXMax/cli-test/cmd/game"
 	"github.com/DMXMax/cli-test/cmd/scene"
 	gdb "github.com/DMXMax/cli-test/util/game"
 
+	"github.com/DMXMax/cli-test/cmd/game"
 	"github.com/DMXMax/cli-test/cmd/roll"
+	"github.com/DMXMax/cli-test/cmd/story"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -76,7 +78,14 @@ var shellCmd = &cobra.Command{
 				continue
 			}
 			//newCmd.SetArgs(args)
+
+			newCmd.Flags().Parse(args)
 			err = newCmd.RunE(newCmd, args)
+
+			newCmd.LocalFlags().VisitAll(func(f *pflag.Flag) {
+				f.Value.Set(f.DefValue)
+				f.Changed = false
+			})
 
 			if err != nil {
 				cmd.Println(err)
@@ -122,9 +131,9 @@ func init() {
 	shellCmd.AddCommand(shellQuitCmd)
 	shellCmd.AddCommand(scene.SceneCmd)
 	shellCmd.AddCommand(game.GameCmd)
-	scene.SceneCmd.AddCommand(scene.AddCmd)
 	shellCmd.AddCommand(scene.SceneCmd)
 	rootCmd.AddCommand(shellCmd)
 	shellCmd.AddCommand(roll.RollCmd)
+	shellCmd.AddCommand(story.StoryCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
