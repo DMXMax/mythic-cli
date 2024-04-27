@@ -8,16 +8,20 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var GameCmd = &cobra.Command{
 	Use:     "game",
-	Aliases: []string{"g", "story"},
-	Short:   "commands about games",
-	Long:    `Create New, Save, and Load Games`,
+	Aliases: []string{"g"},
+	Short:   "Manages Games",
+	Long: `Can create and save games in .gob files.
+	Games currently have a name and a chaos factor.
+	Games have a log or a story that can be added to.
+	It will describe the current game if one is selected.
+	If one is not selected, it will show the usage.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		g := gdb.Current
 		if g != nil {
 			cmd.Println("Current Game:", *g)
 		} else {
-			cmd.Println("No game selected")
+			cmd.Usage()
 		}
 
 		return nil

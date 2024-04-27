@@ -131,9 +131,26 @@ func init() {
 	shellCmd.AddCommand(shellQuitCmd)
 	shellCmd.AddCommand(scene.SceneCmd)
 	shellCmd.AddCommand(game.GameCmd)
-	shellCmd.AddCommand(scene.SceneCmd)
 	rootCmd.AddCommand(shellCmd)
 	shellCmd.AddCommand(roll.RollCmd)
 	shellCmd.AddCommand(story.StoryCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	shellCmd.AddCommand(shellHelpCommand)
+	//shellCmd.SetUsageTemplate(Template)
+}
+
+var shellHelpCommand = &cobra.Command{
+	Use:   "help",
+	Short: "Shell help",
+	Long:  `Provides detailed shell help help`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		newcmd, _, err := cmd.Parent().Find(args)
+		if err != nil {
+			return err
+		}
+		if newcmd == cmd {
+			return cmd.Parent().Usage()
+		}
+		return newcmd.Help()
+	},
 }

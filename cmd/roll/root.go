@@ -17,9 +17,11 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var RollCmd = &cobra.Command{
 	Use:   "roll",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:`,
+	Short: "Rolls on the Mythic Fate Chart",
+	Long: `Rolls on the Mythic chart using the game chosen chaos factor and
+	provided odds. If the odds are not selected, they remain at 50/50.
+	The chaos factor can be set with the -c flag.
+	The odds can be set with the -o flag.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		//	chaos = 4 // default chaos
 		//	cmd.Flags().Parse(args)

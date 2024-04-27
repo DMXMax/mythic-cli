@@ -11,7 +11,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var StoryCmd = &cobra.Command{
 	Use:     "story",
-	Aliases: []string{"s"},
+	Aliases: []string{"s", "log"},
 	Short:   "manage game logs",
 	Long:    `Create New, Save, and Load logs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -78,4 +78,5 @@ func init() {
 	StoryCmd.AddCommand(dumpCmd)
 	StoryCmd.AddCommand(detailsCmd)
 	//StoryCmd.AddCommand(newCmd)
+
 }

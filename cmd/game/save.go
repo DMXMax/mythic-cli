@@ -37,5 +37,5 @@ var saveCmd = &cobra.Command{
 }
 
 func init() {
-	GameCmd.AddCommand(newCmd)
+
 }
