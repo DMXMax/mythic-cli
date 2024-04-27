@@ -1,4 +1,4 @@
-package env
+package scene
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var EnvCmd = &cobra.Command{
-	Use:   "env",
+var SceneCmd = &cobra.Command{
+	Use:   "scene",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("Hello, World!")
+		fmt.Println("Scene Variable!")
 
 		return nil
 	},

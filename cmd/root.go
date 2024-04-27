@@ -9,15 +9,18 @@ import (
 	"os"
 	"strings"
 
-	"cli-test/cmd/env"
-	"cli-test/cmd/roll"
+	"github.com/DMXMax/cli-test/cmd/game"
+	"github.com/DMXMax/cli-test/cmd/scene"
+	gdb "github.com/DMXMax/cli-test/util/game"
+
+	"github.com/DMXMax/cli-test/cmd/roll"
 
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "cli-test",
+	Use:   "github.com/DMXMax/cli-test",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -47,18 +50,24 @@ var shellCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for {
-			fmt.Print("shell> ")
+			if gdb.Current != nil {
+				g := gdb.Current
+				fmt.Print(g.Name, "> ")
+			} else {
+				fmt.Print("shell> ")
+			}
+
 			scanner := bufio.NewScanner(os.Stdin)
 			scanner.Split(bufio.ScanLines)
 			scanner.Scan()
-			fmt.Print([]string{scanner.Text()})
-			fmt.Print("You entered: ", []string{scanner.Text()}, "\n")
+			//fmt.Print([]string{scanner.Text()})
+			//fmt.Print("You entered: ", []string{scanner.Text()}, "\n")
 			if scanner.Err() != nil {
 				return scanner.Err()
 			}
 			text := strings.Fields(scanner.Text())
 			newCmd, args, err := cmd.Find(text)
-			fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
+			//fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
 			if err != nil {
 				cmd.Println(err)
 				continue
@@ -111,8 +120,10 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	shellCmd.AddCommand(shellQuitCmd)
-	env.EnvCmd.AddCommand(env.AddCmd)
-	shellCmd.AddCommand(env.EnvCmd)
+	shellCmd.AddCommand(scene.SceneCmd)
+	shellCmd.AddCommand(game.GameCmd)
+	scene.SceneCmd.AddCommand(scene.AddCmd)
+	shellCmd.AddCommand(scene.SceneCmd)
 	rootCmd.AddCommand(shellCmd)
 	shellCmd.AddCommand(roll.RollCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

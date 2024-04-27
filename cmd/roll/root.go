@@ -1,8 +1,9 @@
 package roll
 
 import (
-	"cli-test/util/dice"
 	"fmt"
+
+	"github.com/DMXMax/cli-test/util/dice"
 
 	"github.com/spf13/cobra"
 )
