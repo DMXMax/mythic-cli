@@ -18,7 +18,7 @@ type Character struct {
 type Game struct {
 	Name       string // Name of the game
 	Chaos      int8   // Current Chaos level
-	Story      []LogEntry
+	GameLog    []LogEntry
 	Properties map[string]any
 }
 
@@ -61,11 +61,11 @@ func GetGame(name string) *Game {
 
 }
 
-func (g *Game) AddStoryEntry(t int, msg string) {
-	g.Story = append(g.Story, LogEntry{Type: t, Msg: msg})
-	log.Info().Msgf("Story Entry added: %s", msg)
+func (g *Game) AddtoGameLog(t int, msg string) {
+	g.GameLog = append(g.GameLog, LogEntry{Type: t, Msg: msg})
+	log.Info().Msgf("Game Log: %s", msg)
 }
 
-func (g *Game) GetStory() []LogEntry {
-	return g.Story
+func (g *Game) GetGameLog() []LogEntry {
+	return g.GameLog
 }

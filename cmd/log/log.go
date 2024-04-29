@@ -1,4 +1,4 @@
-package story
+package log
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var StoryCmd = &cobra.Command{
-	Use:     "story",
-	Aliases: []string{"s", "log"},
+var LogCmd = &cobra.Command{
+	Use:     "gamelog",
+	Aliases: []string{"s", "gl", "log"},
 	Short:   "manage game logs",
 	Long:    `Create New, Save, and Load logs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -20,18 +20,18 @@ var StoryCmd = &cobra.Command{
 	},
 }
 
-var AddStoryCmd = &cobra.Command{
+var AddGameLogCmd = &cobra.Command{
 	Use:     "add",
 	Aliases: []string{"a"},
-	Short:   "add to game story",
-	Long:    `Add Entry to game story log`,
+	Short:   "add to game log",
+	Long:    `Add Entry to game story log. `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		if gdb.Current == nil {
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		g.AddStoryEntry(0, strings.Join(args, " "))
+		g.AddtoGameLog(0, strings.Join(args, " "))
 		return nil
 
 	},
@@ -48,7 +48,7 @@ var dumpCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		for _, s := range g.Story {
+		for _, s := range g.GameLog {
 			fmt.Println(s)
 		}
 		return nil
@@ -67,16 +67,16 @@ var detailsCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		fmt.Println(g.Story)
+		fmt.Println(g.GameLog)
 		return nil
 
 	},
 }
 
 func init() {
-	StoryCmd.AddCommand(AddStoryCmd)
-	StoryCmd.AddCommand(dumpCmd)
-	StoryCmd.AddCommand(detailsCmd)
+	LogCmd.AddCommand(AddGameLogCmd)
+	LogCmd.AddCommand(dumpCmd)
+	LogCmd.AddCommand(detailsCmd)
 	//StoryCmd.AddCommand(newCmd)
 
 }

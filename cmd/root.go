@@ -13,8 +13,8 @@ import (
 	gdb "github.com/DMXMax/cli-test/util/game"
 
 	"github.com/DMXMax/cli-test/cmd/game"
+	gamelog "github.com/DMXMax/cli-test/cmd/log"
 	"github.com/DMXMax/cli-test/cmd/roll"
-	"github.com/DMXMax/cli-test/cmd/story"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -133,7 +133,7 @@ func init() {
 	shellCmd.AddCommand(game.GameCmd)
 	rootCmd.AddCommand(shellCmd)
 	shellCmd.AddCommand(roll.RollCmd)
-	shellCmd.AddCommand(story.StoryCmd)
+	shellCmd.AddCommand(gamelog.LogCmd)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	shellCmd.AddCommand(shellHelpCommand)
 	//shellCmd.SetUsageTemplate(Template)
