@@ -49,25 +49,8 @@ var dumpCmd = &cobra.Command{
 		}
 		g := gdb.Current
 		for _, s := range g.GameLog {
-			fmt.Println(s)
+			fmt.Println(s.Msg)
 		}
-		return nil
-
-	},
-}
-
-var detailsCmd = &cobra.Command{
-	Use:     "details",
-	Aliases: []string{"d"},
-	Short:   "print out story settings",
-	Long:    `Print out the story settings`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-
-		if gdb.Current == nil {
-			return fmt.Errorf("no game selected")
-		}
-		g := gdb.Current
-		fmt.Println(g.GameLog)
 		return nil
 
 	},
@@ -76,7 +59,4 @@ var detailsCmd = &cobra.Command{
 func init() {
 	LogCmd.AddCommand(AddGameLogCmd)
 	LogCmd.AddCommand(dumpCmd)
-	LogCmd.AddCommand(detailsCmd)
-	//StoryCmd.AddCommand(newCmd)
-
 }
