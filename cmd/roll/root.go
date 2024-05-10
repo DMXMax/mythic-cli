@@ -48,7 +48,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		}
 		if len(matches) != 1 { //multiple possible odds
 
-			fmt.Println("Did you mean ones these odds?")
+			fmt.Println("Did you mean one of these odds?")
 			for _, match := range matches {
 				fmt.Printf("%d : %s\n", match, chart.OddsStrList[match])
 			}
@@ -75,5 +75,5 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 
 func init() {
 	RollCmd.Flags().Int8VarP(&chaos, "chaos", "c", 4, "set the chaos factor for the game")
-	RollCmd.Flags().StringVarP(&OddsStrList, "odds", "o", "50/50", "set the odds for the roll")
+	RollCmd.Flags().StringVarP(&OddsStrList, "odds", "o", "4", "set the odds for the roll")
 }
