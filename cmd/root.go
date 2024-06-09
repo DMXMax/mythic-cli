@@ -80,18 +80,23 @@ var shellCmd = &cobra.Command{
 			//newCmd.SetArgs(args)
 
 			newCmd.Flags().Parse(args)
+
 			err = newCmd.RunE(newCmd, args)
 
-			newCmd.LocalFlags().VisitAll(func(f *pflag.Flag) {
-				f.Value.Set(f.DefValue)
-				f.Changed = false
-			})
+			cmd.PersistentPostRunE(newCmd, args)
 
 			if err != nil {
 				cmd.Println(err)
 			}
 
 		}
+	},
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+		cmd.LocalFlags().VisitAll(func(f *pflag.Flag) {
+			f.Value.Set("")
+			f.Changed = false
+		})
+		return nil
 	},
 }
 
@@ -128,14 +133,12 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	shellCmd.AddCommand(shellQuitCmd)
-	shellCmd.AddCommand(scene.SceneCmd)
-	shellCmd.AddCommand(game.GameCmd)
+	shellCmd.AddCommand(shellQuitCmd, scene.SceneCmd, game.GameCmd,
+		roll.RollCmd, gamelog.LogCmd, shellHelpCommand)
+
 	rootCmd.AddCommand(shellCmd)
-	shellCmd.AddCommand(roll.RollCmd)
-	shellCmd.AddCommand(gamelog.LogCmd)
+
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	shellCmd.AddCommand(shellHelpCommand)
 	//shellCmd.SetUsageTemplate(Template)
 }
 
