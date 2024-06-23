@@ -24,6 +24,7 @@ type Game struct {
 
 type Games map[string]*Game
 
+// Current is the current game running. Its nil if there is no game set
 var Current *Game
 
 var games Games

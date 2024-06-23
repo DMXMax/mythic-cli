@@ -27,12 +27,22 @@ var RollCmd = &cobra.Command{
 	RunE: RollFunc,
 }
 
+// if there's a game, use its chaos value. If not, use a default of 5gl unless its set.
 func RollFunc(cmd *cobra.Command, args []string) error {
 	var odds chart.Odds
 	g := gdb.Current
 	if g != nil {
 		if !cmd.Flags().Changed("chaos") {
 			chaos = g.Chaos
+		}
+	} else {
+		// No active game
+		if !cmd.Flags().Changed("chaos") {
+			chaos = 4
+		}
+
+		if !cmd.Flags().Changed("odds") {
+			odds = 5
 		}
 	}
 

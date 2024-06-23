@@ -32,4 +32,5 @@ func init() {
 	GameCmd.AddCommand(newCmd)
 	GameCmd.AddCommand(saveCmd)
 	GameCmd.AddCommand(chaosCmd)
+	GameCmd.AddCommand(loadCmd)
 }
