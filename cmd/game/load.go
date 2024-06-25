@@ -1,10 +1,9 @@
 package game
 
 import (
-	"encoding/gob"
 	"fmt"
-	"os"
 
+	"github.com/DMXMax/cli-test/util/db"
 	gdb "github.com/DMXMax/cli-test/util/game"
 	"github.com/spf13/cobra"
 )
@@ -19,11 +18,11 @@ var loadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if fileName == "" {
+		if gameName == "" {
 			return fmt.Errorf("no file specified")
 		}
 
-		fileName := fmt.Sprintf("%s.gob", fileName)
+		/*fileName := fmt.Sprintf("%s.gob", fileName)
 		file, err := os.Open(fileName)
 		if err != nil {
 			return err
@@ -36,14 +35,22 @@ var loadCmd = &cobra.Command{
 			return err
 		}
 		gdb.Current = &g
+		g =
+		fmt.Printf("Loaded from %s\n", fileName)*/
+		g := &gdb.Game{Name: gameName}
+		result := db.GamesDB.Where(g).First(g)
 
-		fmt.Printf("Loaded from %s\n", fileName)
+		if result.Error == nil {
+			gdb.Current = g
+		} else {
+			fmt.Println(result.Error)
+		}
 
 		return nil
 	},
 }
-var fileName string
+var gameName string
 
 func init() {
-	loadCmd.Flags().StringVar(&fileName, "file", "", "load game from this file")
+	loadCmd.Flags().StringVar(&gameName, "name", "", "load game from this game name")
 }
