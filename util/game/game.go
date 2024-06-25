@@ -2,11 +2,14 @@ package game
 
 import (
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
 type LogEntry struct {
-	Type int
-	Msg  string
+	gorm.Model
+	Type      int
+	Msg       string
+	GameRefer uint
 }
 
 type Character struct {
@@ -16,10 +19,11 @@ type Character struct {
 	Skills  map[string]int
 }
 type Game struct {
-	Name       string // Name of the game
-	Chaos      int8   // Current Chaos level
-	GameLog    []LogEntry
-	Properties map[string]any
+	gorm.Model
+	Name    string     // Name of the game
+	Chaos   int8       // Current Chaos level
+	GameLog []LogEntry `gorm:"foreignKey:GameRefer"`
+	//Properties map[string]any
 }
 
 type Games map[string]*Game
