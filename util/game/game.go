@@ -7,9 +7,9 @@ import (
 
 type LogEntry struct {
 	gorm.Model
-	Type      int
-	Msg       string
-	GameRefer uint
+	Type   int
+	Msg    string
+	GameID uint
 }
 
 type Character struct {
@@ -20,9 +20,9 @@ type Character struct {
 }
 type Game struct {
 	gorm.Model
-	Name    string     // Name of the game
-	Chaos   int8       // Current Chaos level
-	GameLog []LogEntry `gorm:"foreignKey:GameRefer"`
+	Name    string `gorm:"unique"` // Name of the game
+	Chaos   int8   // Current Chaos level
+	GameLog []LogEntry
 	//Properties map[string]any
 }
 
