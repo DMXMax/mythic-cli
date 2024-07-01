@@ -22,21 +22,6 @@ var loadCmd = &cobra.Command{
 			return fmt.Errorf("no file specified")
 		}
 
-		/*fileName := fmt.Sprintf("%s.gob", fileName)
-		file, err := os.Open(fileName)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		dec := gob.NewDecoder(file)
-		g := gdb.Game{}
-		err = dec.Decode(&g)
-		if err != nil {
-			return err
-		}
-		gdb.Current = &g
-		g =
-		fmt.Printf("Loaded from %s\n", fileName)*/
 		g := &gdb.Game{Name: gameName}
 		result := db.GamesDB.Where(g).First(g)
 
@@ -50,6 +35,37 @@ var loadCmd = &cobra.Command{
 	},
 }
 var gameName string
+
+var gameListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "list current games",
+	Long:  `List the games in the database `,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		err := cmd.ParseFlags(args)
+		if err != nil {
+			return err
+		}
+
+		games := []gdb.Game{}
+		result := db.GamesDB.Find(&games)
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if len(games) > 0 {
+			fmt.Println("Games Available:")
+		} else {
+			fmt.Println("No Games Available")
+		}
+
+		for _, game := range games {
+			fmt.Printf("\t %s\n", game.Name)
+		}
+
+		return nil
+	},
+}
 
 func init() {
 	loadCmd.Flags().StringVar(&gameName, "name", "", "load game from this game name")
