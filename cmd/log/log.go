@@ -48,9 +48,10 @@ var dumpCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		for _, s := range g.GameLog {
+		for _, s := range g.GetGameLog() {
 			fmt.Println(s.Msg)
 		}
+
 		return nil
 
 	},

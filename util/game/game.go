@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/DMXMax/cli-test/util/db"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
@@ -20,10 +21,8 @@ type Character struct {
 }
 type Game struct {
 	gorm.Model
-	Name    string `gorm:"unique"` // Name of the game
-	Chaos   int8   // Current Chaos level
-	GameLog []LogEntry
-	//Properties map[string]any
+	Name  string `gorm:"unique"` // Name of the game
+	Chaos int8   // Current Chaos level
 }
 
 type Games map[string]*Game
@@ -67,10 +66,21 @@ func GetGame(name string) *Game {
 }
 
 func (g *Game) AddtoGameLog(t int, msg string) {
-	g.GameLog = append(g.GameLog, LogEntry{Type: t, Msg: msg})
-	log.Info().Msgf("Game Log: %s", msg)
+	entry := LogEntry{Type: t, Msg: msg, GameID: g.ID}
+
+	result := db.GamesDB.Save(&entry)
+	if result.Error != nil {
+		panic(result.Error)
+	}
 }
 
 func (g *Game) GetGameLog() []LogEntry {
-	return g.GameLog
+	log := make([]LogEntry, 0, 10)
+
+	result := db.GamesDB.Where(&LogEntry{GameID: g.ID}).Find(&log)
+	if result.Error != nil {
+		panic(result.Error)
+
+	}
+	return log
 }
