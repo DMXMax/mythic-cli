@@ -74,7 +74,7 @@ func (g *Game) AddtoGameLog(t int, msg string) {
 	entry := LogEntry{Type: t, Msg: msg, GameID: g.ID}
 	g.Log = append(g.Log, entry)
 
-	result := db.GamesDB.Save(&entry)
+	result := db.GamesDB.Save(&g)
 	if result.Error != nil {
 		panic(result.Error)
 	}
