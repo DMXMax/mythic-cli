@@ -23,6 +23,7 @@ type Game struct {
 	gorm.Model
 	Name  string `gorm:"unique"` // Name of the game
 	Chaos int8   // Current Chaos level
+	Log   []LogEntry
 }
 
 type Games map[string]*Game
@@ -66,7 +67,12 @@ func GetGame(name string) *Game {
 }
 
 func (g *Game) AddtoGameLog(t int, msg string) {
+
+	if g.ID == 0 { //Game has not been saved yet
+		db.GamesDB.Save(&g)
+	}
 	entry := LogEntry{Type: t, Msg: msg, GameID: g.ID}
+	g.Log = append(g.Log, entry)
 
 	result := db.GamesDB.Save(&entry)
 	if result.Error != nil {
@@ -74,13 +80,11 @@ func (g *Game) AddtoGameLog(t int, msg string) {
 	}
 }
 
-func (g *Game) GetGameLog() []LogEntry {
-	log := make([]LogEntry, 0, 10)
+func (g *Game) GetGameLog(n int) error {
 
-	result := db.GamesDB.Where(&LogEntry{GameID: g.ID}).Find(&log)
-	if result.Error != nil {
-		panic(result.Error)
+	result := db.GamesDB.Preload("Log", func(tx *gorm.DB) *gorm.DB {
+		return tx.Order("created_at DESC").Limit(n).Find(&g.Log)
+	}).Find(&g)
 
-	}
-	return log
+	return result.Error
 }

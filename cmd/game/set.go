@@ -20,7 +20,8 @@ var newCmd = &cobra.Command{
 			return fmt.Errorf("new requires a name")
 		}
 		name := args[0]
-
+		chaos = 4
+		cmd.ParseFlags(args)
 		gdb.SetGame(name, chaos)
 
 		return nil

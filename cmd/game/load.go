@@ -23,7 +23,7 @@ var loadCmd = &cobra.Command{
 		}
 
 		g := &gdb.Game{Name: gameName}
-		result := db.GamesDB.Where(g).First(g)
+		result := db.GamesDB.Preload("Log").Where(g).First(g)
 
 		if result.Error == nil {
 			gdb.Current = g

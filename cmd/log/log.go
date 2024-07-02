@@ -48,7 +48,9 @@ var dumpCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		for _, s := range g.GetGameLog() {
+
+		//g.GetGameLog(2) // should get the most current log with a limit
+		for _, s := range g.Log {
 			fmt.Println(s.Msg)
 		}
 
