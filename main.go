@@ -4,9 +4,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package main
 
 import (
-	"github.com/DMXMax/cli-test/cmd"
-	"github.com/DMXMax/cli-test/util/db"
-	"github.com/DMXMax/cli-test/util/game"
+	"github.com/DMXMax/mythic-cli/cmd"
+	"github.com/DMXMax/mythic-cli/util/db"
+	"github.com/DMXMax/mythic-cli/util/game"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

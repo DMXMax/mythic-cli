@@ -9,12 +9,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/DMXMax/cli-test/cmd/scene"
-	gdb "github.com/DMXMax/cli-test/util/game"
+	"github.com/DMXMax/mythic-cli/cmd/scene"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
 
-	"github.com/DMXMax/cli-test/cmd/game"
-	gamelog "github.com/DMXMax/cli-test/cmd/log"
-	"github.com/DMXMax/cli-test/cmd/roll"
+	"github.com/DMXMax/mythic-cli/cmd/game"
+	gamelog "github.com/DMXMax/mythic-cli/cmd/log"
+	"github.com/DMXMax/mythic-cli/cmd/roll"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -22,14 +22,18 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "github.com/DMXMax/cli-test",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:   "mythic-cli",
+	Short: "Mythic Game Master Emulator CLI",
+	Long: `A command-line tool for solo RPG gaming using the Mythic Game Master Emulator system.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Features:
+- Interactive shell for game management
+- Dice rolling with Mythic fate chart
+- Game state persistence with SQLite
+- Story logging and chaos factor management
+- Character and scene management
+
+Perfect for solo RPG adventures, GM-less gaming, and story generation.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

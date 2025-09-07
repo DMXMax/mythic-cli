@@ -1,7 +1,7 @@
 package game
 
 import (
-	"github.com/DMXMax/cli-test/util/db"
+	"github.com/DMXMax/mythic-cli/util/db"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )

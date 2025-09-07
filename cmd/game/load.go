@@ -3,8 +3,8 @@ package game
 import (
 	"fmt"
 
-	"github.com/DMXMax/cli-test/util/db"
-	gdb "github.com/DMXMax/cli-test/util/game"
+	"github.com/DMXMax/mythic-cli/util/db"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/spf13/cobra"
 )
 

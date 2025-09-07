@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	gdb "github.com/DMXMax/cli-test/util/game"
 	"github.com/DMXMax/mge/chart"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
