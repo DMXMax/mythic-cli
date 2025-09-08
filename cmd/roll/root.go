@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"strconv"
+	"strings"
 
 	"github.com/DMXMax/mge/chart"
 	"github.com/DMXMax/mythic-cli/util/db"
@@ -14,17 +15,21 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var RollCmd = &cobra.Command{
-	Use:   "roll",
+	Use:   "roll [message]",
 	Short: "Rolls on the Mythic Fate Chart",
-	Long: `Rolls on the Mythic chart using the game chosen chaos factor and
-	provided odds. If the odds are not selected, they remain at 50/50.
+	Long: `Rolls on the Mythic chart using the game's chaos factor and odds.
+A message for the roll is optional. If provided, it will be logged with the result.
 	The chaos factor can be set with the -c flag.
 	The odds can be set with the -o flag.`,
 	RunE: RollFunc,
 }
 
-// if there's a game, use its chaos value. If not, use a default of 4 unless it's set.
 func RollFunc(cmd *cobra.Command, args []string) error {
+	message := strings.Join(args, " ")
+	if len(message) > 256 {
+		return fmt.Errorf("message cannot be longer than 256 characters")
+	}
+
 	var odds chart.Odds
 	g := gdb.Current
 
@@ -81,9 +86,11 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 
 	result := chart.FateChart.RollOdds(odds, int(chaosValue))
 
-	fmt.Println(result)
+	logMessage := strings.TrimSpace(fmt.Sprintf("%s (C:%d) -> %s", message, chaosValue, result))
+
+	fmt.Println(logMessage)
 	if gdb.Current != nil {
-		gdb.Current.AddtoGameLog(1, result.String())
+		gdb.Current.AddtoGameLog(1, logMessage)
 		// Persist the game state, including the new log entry
 		if err := db.GamesDB.Save(gdb.Current).Error; err != nil {
 			return fmt.Errorf("failed to save game after roll: %w", err)
