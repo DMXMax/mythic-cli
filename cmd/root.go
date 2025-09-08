@@ -116,11 +116,12 @@ var shellCmd = &cobra.Command{
 				}
 
 				if newCmd.RunE != nil {
-					if err := newCmd.RunE(newCmd, newArgs); err != nil {
+					// After parsing, the non-flag arguments are available via Flags().Args()
+					if err := newCmd.RunE(newCmd, newCmd.Flags().Args()); err != nil {
 						cmd.Println(err)
 					}
 				} else if newCmd.Run != nil {
-					newCmd.Run(newCmd, newArgs)
+					newCmd.Run(newCmd, newCmd.Flags().Args())
 				}
 
 				// Reset flags on the executed command to avoid carry-over in the shell
