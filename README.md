@@ -10,6 +10,8 @@ A command-line tool for solo RPG gaming using the Mythic Game Master Emulator sy
 - **Story Logging**: Automatic logging of dice rolls and game events
 - **Chaos Factor Management**: Dynamic chaos factor tracking for story complexity
 - **Character and Scene Management**: Tools for managing game elements
+- **Robust Error Handling**: Comprehensive validation and user feedback
+- **Flexible Game Creation**: Multiple ways to create games with custom chaos factors
 
 ## Installation
 
@@ -53,7 +55,9 @@ This will give you a command prompt where you can enter various commands.
 #### Game Management
 
 - `game` or `g` - Show current game information or usage
-- `game new <name> [chaos]` - Create a new game with optional chaos factor
+- `game create <name> [--chaos <value>]` - Create a new game with optional chaos factor
+- `game create <name> [-x <value>]` - Create a new game with short chaos flag
+- `game new <name>` - Alias for `game create` (backward compatibility)
 - `game load <name>` - Load an existing game
 - `game save` - Save the current game
 - `game list` - List all available games
@@ -83,8 +87,8 @@ This will give you a command prompt where you can enter various commands.
 ### Example Session
 
 ```
-shell> game new "My Adventure" 5
-New game created: My Adventure
+shell> game create "My Adventure" --chaos 5
+Created new game: My Adventure (Chaos: 5)
 
 My Adventure> roll -o "likely"
 Yes, and...
@@ -100,6 +104,22 @@ My Adventure> log 5
 
 My Adventure> quit
 Goodbye!
+```
+
+### Alternative Command Examples
+
+```
+# Create a game with default chaos (4)
+shell> game create "Quick Adventure"
+
+# Create a game with custom chaos using short flag
+shell> game create "Chaotic Quest" -x 8
+
+# Create a game with custom chaos using long flag
+shell> game create "Epic Journey" --chaos 6
+
+# The 'new' alias still works for backward compatibility
+shell> game new "Legacy Game"
 ```
 
 ## Game Mechanics
@@ -141,6 +161,24 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - Complete log of all dice rolls and events
 - Timestamps for all entries
 
+## Recent Improvements
+
+### Version Updates
+
+- **Enhanced Game Creation**: The `game new` command has been renamed to `game create` for better clarity
+- **Improved Error Handling**: Added comprehensive validation for chaos factors and game parameters
+- **Better User Feedback**: Clear confirmation messages when creating or selecting games
+- **Flexible Flag Options**: Support for both long (`--chaos`) and short (`-x`) flags
+- **Backward Compatibility**: The `new` alias still works for existing users
+- **Robust Validation**: Chaos factor validation using proper range checking (1-9)
+
+### Command Improvements
+
+- Fixed flag parsing order for better reliability
+- Added structured logging for better debugging
+- Improved error messages with proper context
+- Enhanced command documentation and help text
+
 ## Development
 
 ### Project Structure
@@ -148,6 +186,11 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 ```
 ├── cmd/                 # Command implementations
 │   ├── game/           # Game management commands
+│   │   ├── create.go   # Game creation command (formerly new)
+│   │   ├── chaos.go    # Chaos factor management
+│   │   ├── load.go     # Game loading and listing
+│   │   ├── save.go     # Game saving
+│   │   └── game.go     # Main game command
 │   ├── log/            # Logging commands
 │   ├── roll/           # Dice rolling commands
 │   ├── scene/          # Scene management commands

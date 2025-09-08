@@ -29,7 +29,7 @@ var GameCmd = &cobra.Command{
 }
 
 func init() {
-	GameCmd.AddCommand(newCmd)
+	GameCmd.AddCommand(createCmd)
 	GameCmd.AddCommand(saveCmd)
 	GameCmd.AddCommand(chaosCmd)
 	GameCmd.AddCommand(loadCmd)
