@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/DMXMax/mge/chart"
+	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 // createCmd represents the command to create or select a game
@@ -23,12 +25,7 @@ var createCmd = &cobra.Command{
 
 		name := args[0]
 
-		// Parse flags before accessing them
-		if err := cmd.ParseFlags(args); err != nil {
-			return fmt.Errorf("failed to parse flags: %w", err)
-		}
-
-		// Get chaos value from flag
+		// Get chaos value from flag (Cobra handles flag parsing automatically)
 		chaos, err := cmd.Flags().GetInt8("chaos")
 		if err != nil {
 			return fmt.Errorf("failed to get chaos flag: %w", err)
@@ -39,17 +36,31 @@ var createCmd = &cobra.Command{
 			return fmt.Errorf("chaos must be between %d and %d", chart.MIN_CHAOS, chart.MAX_CHAOS)
 		}
 
-		// Check if game already exists
-		existingGame := gdb.GetGame(name)
-		if existingGame != nil {
-			gdb.Current = existingGame
+		// Try to find the game in the database
+		var game gdb.Game
+		result := db.GamesDB.Preload("Log").Where("name = ?", name).First(&game)
+
+		if result.Error == nil {
+			// Game found, set it as current
+			gdb.Current = &game
 			log.Info().Str("game", name).Msg("Selected existing game")
-			cmd.Printf("Selected existing game: %s (Chaos: %d)\n", name, existingGame.Chaos)
-		} else {
-			// Create new game
-			game := gdb.SetGame(name, chaos)
+			cmd.Printf("Selected existing game: %s (Chaos: %d)\n", name, game.Chaos)
+		} else if result.Error == gorm.ErrRecordNotFound {
+			// Game not found, create a new one
+			newGame := &gdb.Game{
+				Name:  name,
+				Chaos: chaos,
+			}
+			// Save the new game to the database
+			if err := db.GamesDB.Create(newGame).Error; err != nil {
+				return fmt.Errorf("failed to create game '%s': %w", name, err)
+			}
+			gdb.Current = newGame
 			log.Info().Str("game", name).Int8("chaos", chaos).Msg("Created new game")
-			cmd.Printf("Created new game: %s (Chaos: %d)\n", name, game.Chaos)
+			cmd.Printf("Created new game: %s (Chaos: %d)\n", name, newGame.Chaos)
+		} else {
+			// Another database error occurred
+			return fmt.Errorf("error checking for game '%s': %w", name, result.Error)
 		}
 
 		return nil

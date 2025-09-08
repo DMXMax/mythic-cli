@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/spf13/cobra"
 )
@@ -32,12 +33,16 @@ var AddGameLogCmd = &cobra.Command{
 		}
 		g := gdb.Current
 		g.AddtoGameLog(0, strings.Join(args, " "))
-		return nil
+		if err := db.GamesDB.Save(g).Error; err != nil {
+			return fmt.Errorf("failed to save game after adding log: %w", err)
+		}
+		fmt.Println("Log entry added and game saved.")
 
+		return nil
 	},
 }
 
-var dumpCmd = &cobra.Command{
+var printCmd = &cobra.Command{
 	Use:     "print",
 	Aliases: []string{"p"},
 	Short:   "print out story log",
@@ -61,5 +66,5 @@ var dumpCmd = &cobra.Command{
 
 func init() {
 	LogCmd.AddCommand(AddGameLogCmd)
-	LogCmd.AddCommand(dumpCmd)
+	LogCmd.AddCommand(printCmd)
 }

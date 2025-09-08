@@ -23,7 +23,7 @@ var saveCmd = &cobra.Command{
 			} else {*/
 		db.GamesDB.Save(g)
 		//}
-		//fmt.Printf("Game saved as %d", g.ID)
+		fmt.Printf("Game '%s' saved.\n", g.Name)
 
 		return nil
 	},

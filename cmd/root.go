@@ -88,28 +88,43 @@ var shellCmd = &cobra.Command{
 				continue
 			}
 
-			// Ensure flags are parsed before executing the subcommand
-			_ = newCmd.Flags().Parse(newArgs)
-
-			if newCmd.RunE != nil {
-				if err := newCmd.RunE(newCmd, newArgs); err != nil {
-					cmd.Println(err)
+			// Check if help is requested
+			hasHelp := false
+			for _, arg := range newArgs {
+				if arg == "--help" || arg == "-h" {
+					hasHelp = true
+					break
 				}
-			} else if newCmd.Run != nil {
-				newCmd.Run(newCmd, newArgs)
 			}
 
-			if cmd.PersistentPostRunE != nil {
-				_ = cmd.PersistentPostRunE(newCmd, newArgs)
+			if hasHelp {
+				// Show help for the command
+				newCmd.Help()
+			} else {
+				// Set the args for the command and execute it normally
+				newCmd.SetArgs(newArgs)
+
+				// Parse flags to ensure default values are set
+				if err := newCmd.Flags().Parse(newArgs); err != nil {
+					cmd.Println(err)
+					continue
+				}
+
+				if newCmd.RunE != nil {
+					if err := newCmd.RunE(newCmd, newArgs); err != nil {
+						cmd.Println(err)
+					}
+				} else if newCmd.Run != nil {
+					newCmd.Run(newCmd, newArgs)
+				}
+
+				// Reset flags on the executed command to avoid carry-over in the shell
+				newCmd.Flags().VisitAll(func(f *pflag.Flag) {
+					f.Value.Set(f.DefValue)
+					f.Changed = false
+				})
 			}
 		}
-	},
-	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
-		cmd.LocalFlags().VisitAll(func(f *pflag.Flag) {
-			f.Value.Set("")
-			f.Changed = false
-		})
-		return nil
 	},
 }
 

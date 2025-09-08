@@ -6,14 +6,10 @@ import (
 	"strconv"
 
 	"github.com/DMXMax/mge/chart"
+	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-)
-
-var (
-	OddsStrList string
-	chaos       int8
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -31,20 +27,34 @@ var RollCmd = &cobra.Command{
 func RollFunc(cmd *cobra.Command, args []string) error {
 	var odds chart.Odds
 	g := gdb.Current
-	if g != nil {
-		if !cmd.Flags().Changed("chaos") {
-			chaos = g.Chaos
+
+	// Get chaos value from flag
+	chaosValue, err := cmd.Flags().GetInt8("chaos")
+	if err != nil {
+		return fmt.Errorf("failed to get chaos flag: %w", err)
+	}
+
+	// Get odds value from flag
+	oddsStr, err := cmd.Flags().GetString("odds")
+	if err != nil {
+		return fmt.Errorf("failed to get odds flag: %w", err)
+	}
+
+	// Use game's chaos if not explicitly set, otherwise use default
+	if !cmd.Flags().Changed("chaos") {
+		if g != nil {
+			chaosValue = g.Chaos
+		} else {
+			chaosValue = 4 // default chaos value
 		}
-	} else if !cmd.Flags().Changed("chaos") {
-		chaos = 4
 	}
 
 	// try to convert odds to a number. If not, try to match it to a string
-	parsed, err := strconv.ParseInt(OddsStrList, 10, 8)
+	parsed, err := strconv.ParseInt(oddsStr, 10, 8)
 	if err != nil { // not a number, try to match it to a string
-		matches := chart.MatchOddNametoOdds(OddsStrList)
+		matches := chart.MatchOddNametoOdds(oddsStr)
 		if len(matches) == 0 {
-			err := fmt.Errorf("invalid odds: %s", OddsStrList)
+			err := fmt.Errorf("invalid odds: %s", oddsStr)
 			log.Error().Err(err).Msg("Invalid odds")
 			return err
 
@@ -64,12 +74,15 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		odds = chart.Odds(parsed)
 	}
 
-	log.Trace().Str("odds", odds.String()).Int8("chaos", chaos).Msg("Rolling the dice")
-	result := chart.FateChart.RollOdds(odds, int(chaos))
+	result := chart.FateChart.RollOdds(odds, int(chaosValue))
 
 	fmt.Println(result)
 	if gdb.Current != nil {
 		gdb.Current.AddtoGameLog(1, result.String())
+		// Persist the game state, including the new log entry
+		if err := db.GamesDB.Save(gdb.Current).Error; err != nil {
+			return fmt.Errorf("failed to save game after roll: %w", err)
+		}
 	}
 
 	return nil
@@ -77,6 +90,6 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RollCmd.Flags().Int8VarP(&chaos, "chaos", "c", 4, "set the chaos factor for the game")
-	RollCmd.Flags().StringVarP(&OddsStrList, "odds", "o", "5", "set the odds for the roll (name or number)")
+	RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
+	RollCmd.Flags().StringP("odds", "o", "5", "set the odds for the roll (name or number)")
 }

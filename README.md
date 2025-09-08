@@ -65,10 +65,11 @@ This will give you a command prompt where you can enter various commands.
 
 #### Dice Rolling
 
-- `roll` - Roll on the Mythic fate chart with current game settings
-- `roll -o <odds>` - Roll with specific odds (e.g., "impossible", "very unlikely", "unlikely", "50/50", "likely", "very likely", "near sure thing", "a sure thing")
-- `roll -c <chaos>` - Roll with specific chaos factor (1-9)
+- `roll` - Roll on the Mythic fate chart with current game settings (default: likely odds, game's chaos factor)
+- `roll -o <odds>` - Roll with specific odds (e.g., "impossible", "very unlikely", "unlikely", "50/50", "likely", "very likely", "nearly certain", "certain")
+- `roll -c <chaos>` - Roll with specific chaos factor (1-9) and default odds
 - `roll -o <odds> -c <chaos>` - Roll with both specific odds and chaos factor
+- `roll --help` - Show detailed help for the roll command
 
 #### Logging
 
@@ -90,17 +91,26 @@ This will give you a command prompt where you can enter various commands.
 shell> game create "My Adventure" --chaos 5
 Created new game: My Adventure (Chaos: 5)
 
+My Adventure> roll
+likely - 42: Yes
+
 My Adventure> roll -o "likely"
-Yes, and...
+likely - 67: No
 
-My Adventure> roll -o "unlikely" -c 7
-No, but...
+My Adventure> roll -c 8
+likely - 15: Exceptional Yes
 
-My Adventure> game save
-Game saved successfully
+My Adventure> roll -o "unlikely" -c 2
+unlikely - 23: Yes
 
-My Adventure> log 5
-[Recent log entries displayed]
+My Adventure> game create "My Adventure"
+Selected existing game: My Adventure (Chaos: 5)
+
+My Adventure> gl print
+likely - 42: Yes
+likely - 67: No
+likely - 15: Exceptional Yes
+unlikely - 23: Yes
 
 My Adventure> quit
 Goodbye!
@@ -134,14 +144,15 @@ The chaos factor (1-9) affects the likelihood of extreme results:
 ### Odds
 
 The Mythic system uses descriptive odds:
-- **Impossible** (1)
+- **Impossible** (0)
+- **Nearly Impossible** (1)
 - **Very Unlikely** (2)
 - **Unlikely** (3)
-- **50/50** (4)
+- **Fifty Fifty** (4)
 - **Likely** (5)
 - **Very Likely** (6)
-- **Near Sure Thing** (7)
-- **A Sure Thing** (8)
+- **Nearly Certain** (7)
+- **Certain** (8)
 
 ### Fate Chart Results
 
@@ -161,6 +172,12 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - Complete log of all dice rolls and events
 - Timestamps for all entries
 
+### Game Management
+
+- **Automatic Game Loading**: If you try to create a game with a name that already exists, the system will automatically load the existing game instead of creating a duplicate
+- **Persistent State**: Games are automatically saved when you make dice rolls or add log entries
+- **Database Integrity**: UNIQUE constraint errors are handled gracefully
+
 ## Recent Improvements
 
 ### Version Updates
@@ -171,6 +188,10 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Flexible Flag Options**: Support for both long (`--chaos`) and short (`-x`) flags
 - **Backward Compatibility**: The `new` alias still works for existing users
 - **Robust Validation**: Chaos factor validation using proper range checking (1-9)
+- **Fixed Help Commands**: All help commands now work properly (`--help` flag support)
+- **Fixed Roll Command**: Dice rolling now works correctly with all flag combinations
+- **Database Constraint Fixes**: Games with duplicate names are now handled gracefully
+- **Improved User Experience**: Removed verbose trace and debug messages for cleaner output
 
 ### Command Improvements
 
@@ -178,6 +199,12 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - Added structured logging for better debugging
 - Improved error messages with proper context
 - Enhanced command documentation and help text
+- **Fixed Shell Flag Handling**: Commands now properly parse flags and handle default values
+- **Fixed Database Issues**: UNIQUE constraint errors resolved for duplicate game names
+- **Improved Roll Command**: Fixed chaos factor and odds parsing issues
+- **Enhanced Shell Stability**: Multiple commands in sequence now work correctly
+- **Cleaner Output**: Removed verbose logging messages for better user experience
+- **Silent Database Operations**: GORM database logs are now hidden from users
 
 ## Development
 

@@ -14,10 +14,7 @@ var loadCmd = &cobra.Command{
 	Short: "load a game from a file",
 	Long:  `Load a game from a given file. `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := cmd.ParseFlags(args)
-		if err != nil {
-			return err
-		}
+		// Cobra handles flag parsing automatically
 		if gameName == "" {
 			return fmt.Errorf("no file specified")
 		}
@@ -27,8 +24,9 @@ var loadCmd = &cobra.Command{
 
 		if result.Error == nil {
 			gdb.Current = g
+			cmd.Printf("Loaded game: %s (Chaos: %d)\n", g.Name, g.Chaos)
 		} else {
-			fmt.Println(result.Error)
+			return fmt.Errorf("could not load game '%s': %w", gameName, result.Error)
 		}
 
 		return nil
@@ -41,11 +39,7 @@ var gameListCmd = &cobra.Command{
 	Short: "list current games",
 	Long:  `List the games in the database `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := cmd.ParseFlags(args)
-		if err != nil {
-			return err
-		}
-
+		// Cobra handles flag parsing automatically
 		games := []gdb.Game{}
 		result := db.GamesDB.Find(&games)
 

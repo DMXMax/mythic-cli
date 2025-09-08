@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/DMXMax/mge/chart"
+	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,12 @@ var chaosCmd = &cobra.Command{
 				return fmt.Errorf("chaos must be between %d and %d", chart.MIN_CHAOS, chart.MAX_CHAOS)
 			}
 			g.Chaos = int8(set)
-			log.Trace().Int8("chaos", int8(set)).Msg("Chaos set")
+			fmt.Printf("Chaos factor set to %d\n", set)
+			// Persist the change to the database
+			if err := db.GamesDB.Save(g).Error; err != nil {
+				return fmt.Errorf("failed to save game after changing chaos: %w", err)
+			}
+			fmt.Println("Game saved.")
 			return nil
 		}
 
