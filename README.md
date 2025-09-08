@@ -24,8 +24,9 @@ A command-line tool for solo RPG gaming using the Mythic Game Master Emulator sy
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/DMXMax/cli-test.git
-cd cli-test
+
+git clone https://github.com/DMXMax/mythic-cli.git
+cd mythic-cli
 ```
 
 2. Build the application:

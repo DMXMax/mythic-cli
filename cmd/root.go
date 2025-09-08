@@ -84,7 +84,9 @@ var shellCmd = &cobra.Command{
 				cmd.Println(err)
 				continue
 			}
+			// If Find returns the same command, it means no subcommand was found.
 			if newCmd == cmd {
+				cmd.Printf("Error: unknown command \"%s\" for \"%s\"\n", fields[0], cmd.CommandPath())
 				continue
 			}
 
