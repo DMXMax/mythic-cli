@@ -49,29 +49,34 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// try to convert odds to a number. If not, try to match it to a string
-	parsed, err := strconv.ParseInt(oddsStr, 10, 8)
-	if err != nil { // not a number, try to match it to a string
-		matches := chart.MatchOddNametoOdds(oddsStr)
-		if len(matches) == 0 {
-			err := fmt.Errorf("invalid odds: %s", oddsStr)
-			log.Error().Err(err).Msg("Invalid odds")
-			return err
-
-		}
-		if len(matches) != 1 { // multiple possible odds
-
-			fmt.Println("Did you mean one of these odds?")
-			for _, match := range matches {
-				fmt.Printf("%d : %s\n", match, chart.OddsStrList[match])
-			}
-			return fmt.Errorf("multiple possible odds")
-		}
-
-		odds = chart.Odds(matches[0])
-
+	// Use game's odds if not explicitly set, otherwise parse the flag
+	if !cmd.Flags().Changed("odds") && g != nil {
+		odds = chart.Odds(g.Odds)
 	} else {
-		odds = chart.Odds(parsed)
+		// try to convert odds to a number. If not, try to match it to a string
+		parsed, err := strconv.ParseInt(oddsStr, 10, 8)
+		if err != nil { // not a number, try to match it to a string
+			matches := chart.MatchOddNametoOdds(oddsStr)
+			if len(matches) == 0 {
+				err := fmt.Errorf("invalid odds: %s", oddsStr)
+				log.Error().Err(err).Msg("Invalid odds")
+				return err
+
+			}
+			if len(matches) != 1 { // multiple possible odds
+
+				fmt.Println("Did you mean one of these odds?")
+				for _, match := range matches {
+					fmt.Printf("%d : %s\n", match, chart.OddsStrList[match])
+				}
+				return fmt.Errorf("multiple possible odds")
+			}
+
+			odds = chart.Odds(matches[0])
+
+		} else {
+			odds = chart.Odds(parsed)
+		}
 	}
 
 	result := chart.FateChart.RollOdds(odds, int(chaosValue))

@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/DMXMax/mge/chart"
+
 	"github.com/DMXMax/mythic-cli/cmd/scene"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 
@@ -60,7 +62,8 @@ var shellCmd = &cobra.Command{
 		for {
 			if gdb.Current != nil {
 				g := gdb.Current
-				fmt.Print(g.Name, "> ")
+				oddsName := chart.OddsStrList[g.Odds]
+				fmt.Printf("%s (C:%d O:%s)> ", g.Name, g.Chaos, oddsName)
 			} else {
 				fmt.Print("shell> ")
 			}

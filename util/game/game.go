@@ -22,6 +22,7 @@ type Game struct {
 	gorm.Model
 	Name  string `gorm:"unique"` // Name of the game
 	Chaos int8   // Current Chaos level
+	Odds  int8   // Current default odds
 	Log   []LogEntry
 }
 
@@ -30,6 +31,10 @@ var Current *Game
 
 func (g *Game) SetChaos(v int8) {
 	g.Chaos = v
+}
+
+func (g *Game) SetOdds(v int8) {
+	g.Odds = v
 }
 
 func (g *Game) AddtoGameLog(t int, msg string) {

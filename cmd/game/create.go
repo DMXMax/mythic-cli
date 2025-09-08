@@ -50,6 +50,7 @@ var createCmd = &cobra.Command{
 			newGame := &gdb.Game{
 				Name:  name,
 				Chaos: chaos,
+				Odds:  5, // Default odds: Likely
 			}
 			// Save the new game to the database
 			if err := db.GamesDB.Create(newGame).Error; err != nil {

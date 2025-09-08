@@ -12,9 +12,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var chaosCmd = &cobra.Command{
-	Use:   "chaos",
-	Short: "set the chaos factor for the game",
-	Long:  `Set the chaos factor for the game.`,
+	Use:   "chaos [value]",
+	Short: "Set or show the chaos factor for the game",
+	Long:  `Set or show the chaos factor for the game (1-9).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		g := gdb.Current
 		if g == nil {
@@ -29,13 +29,12 @@ var chaosCmd = &cobra.Command{
 			if set < chart.MIN_CHAOS || set > chart.MAX_CHAOS {
 				return fmt.Errorf("chaos must be between %d and %d", chart.MIN_CHAOS, chart.MAX_CHAOS)
 			}
-			g.Chaos = int8(set)
+			g.SetChaos(int8(set))
 			fmt.Printf("Chaos factor set to %d\n", set)
 			// Persist the change to the database
 			if err := db.GamesDB.Save(g).Error; err != nil {
 				return fmt.Errorf("failed to save game after changing chaos: %w", err)
 			}
-			fmt.Println("Game saved.")
 			return nil
 		}
 
