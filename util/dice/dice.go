@@ -20,7 +20,7 @@ type Roll struct {
 
 func RollFate() *Roll {
 	r := Roll{}
-	for i := 0; i < len(r.dice); i++ {
+	for i := range r.dice {
 		r.dice[i] = rand.Intn(3) - 1
 	}
 	return &r
@@ -28,11 +28,11 @@ func RollFate() *Roll {
 
 func (r *Roll) Total() int {
 	total := 0
-	for i := 0; i < len(r.dice); i++ {
-		total += r.dice[i]
+	for _, die := range r.dice {
+		total += die
 	}
-	for m := range r.Modifiers {
-		total += int(r.Modifiers[m].Mod)
+	for _, modifier := range r.Modifiers {
+		total += int(modifier.Mod)
 	}
 
 	return total

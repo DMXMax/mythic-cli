@@ -20,15 +20,15 @@ func init() {
 	var err error
 	db.GamesDB, err = gorm.Open(sqlite.Open("data/games.db"), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		panic("failed to connect database: data/games.db")
 	}
 
 	err = db.GamesDB.AutoMigrate(&game.Game{})
 	if err != nil {
-		panic("failed to migrate Game")
+		panic("failed to migrate Game model")
 	}
 	err = db.GamesDB.AutoMigrate(&game.LogEntry{})
 	if err != nil {
-		panic("failed to migrate LogEntry")
+		panic("failed to migrate LogEntry model")
 	}
 }

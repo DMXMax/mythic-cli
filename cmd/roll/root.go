@@ -27,7 +27,7 @@ var RollCmd = &cobra.Command{
 	RunE: RollFunc,
 }
 
-// if there's a game, use its chaos value. If not, use a default of 5gl unless its set.
+// if there's a game, use its chaos value. If not, use a default of 4 unless it's set.
 func RollFunc(cmd *cobra.Command, args []string) error {
 	var odds chart.Odds
 	g := gdb.Current
@@ -35,20 +35,13 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		if !cmd.Flags().Changed("chaos") {
 			chaos = g.Chaos
 		}
-	} else {
-		// No active game
-		if !cmd.Flags().Changed("chaos") {
-			chaos = 4
-		}
-
-		if !cmd.Flags().Changed("odds") {
-			odds = 5
-		}
+	} else if !cmd.Flags().Changed("chaos") {
+		chaos = 4
 	}
 
 	// try to convert odds to a number. If not, try to match it to a string
 	parsed, err := strconv.ParseInt(OddsStrList, 10, 8)
-	if err != nil { //not a number, try to match it to a string
+	if err != nil { // not a number, try to match it to a string
 		matches := chart.MatchOddNametoOdds(OddsStrList)
 		if len(matches) == 0 {
 			err := fmt.Errorf("invalid odds: %s", OddsStrList)
@@ -56,7 +49,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 			return err
 
 		}
-		if len(matches) != 1 { //multiple possible odds
+		if len(matches) != 1 { // multiple possible odds
 
 			fmt.Println("Did you mean one of these odds?")
 			for _, match := range matches {
@@ -85,5 +78,5 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 
 func init() {
 	RollCmd.Flags().Int8VarP(&chaos, "chaos", "c", 4, "set the chaos factor for the game")
-	RollCmd.Flags().StringVarP(&OddsStrList, "odds", "o", "4", "set the odds for the roll")
+	RollCmd.Flags().StringVarP(&OddsStrList, "odds", "o", "5", "set the odds for the roll (name or number)")
 }

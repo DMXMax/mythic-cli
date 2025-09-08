@@ -55,6 +55,8 @@ var shellCmd = &cobra.Command{
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Split(bufio.ScanLines)
 		for {
 			if gdb.Current != nil {
 				g := gdb.Current
@@ -63,17 +65,21 @@ var shellCmd = &cobra.Command{
 				fmt.Print("shell> ")
 			}
 
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Split(bufio.ScanLines)
-			scanner.Scan()
-			//fmt.Print([]string{scanner.Text()})
-			//fmt.Print("You entered: ", []string{scanner.Text()}, "\n")
-			if scanner.Err() != nil {
-				return scanner.Err()
+			if !scanner.Scan() {
+				if err := scanner.Err(); err != nil {
+					return err
+				}
+				cmd.Println("Goodbye!")
+				return nil
 			}
-			text := strings.Fields(scanner.Text())
-			newCmd, args, err := cmd.Find(text)
-			//fmt.Println("newCmd: ", newCmd, "args: ", args, "err: ", err)
+
+			input := strings.TrimSpace(scanner.Text())
+			if input == "" {
+				continue
+			}
+			fields := strings.Fields(input)
+
+			newCmd, newArgs, err := cmd.Find(fields)
 			if err != nil {
 				cmd.Println(err)
 				continue
@@ -81,18 +87,21 @@ var shellCmd = &cobra.Command{
 			if newCmd == cmd {
 				continue
 			}
-			//newCmd.SetArgs(args)
 
-			newCmd.Flags().Parse(args)
+			// Ensure flags are parsed before executing the subcommand
+			_ = newCmd.Flags().Parse(newArgs)
 
-			err = newCmd.RunE(newCmd, args)
-
-			cmd.PersistentPostRunE(newCmd, args)
-
-			if err != nil {
-				cmd.Println(err)
+			if newCmd.RunE != nil {
+				if err := newCmd.RunE(newCmd, newArgs); err != nil {
+					cmd.Println(err)
+				}
+			} else if newCmd.Run != nil {
+				newCmd.Run(newCmd, newArgs)
 			}
 
+			if cmd.PersistentPostRunE != nil {
+				_ = cmd.PersistentPostRunE(newCmd, newArgs)
+			}
 		}
 	},
 	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
@@ -116,8 +125,7 @@ func Execute() {
 var shellQuitCmd = &cobra.Command{
 	Use:   "quit",
 	Short: "Quit the shell",
-	Long: `Quit the shell, but longer",
-`,
+	Long:  `Quit the shell, but longer`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
