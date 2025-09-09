@@ -4,9 +4,10 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/DMXMax/mge/chart"
@@ -18,6 +19,7 @@ import (
 	gamelog "github.com/DMXMax/mythic-cli/cmd/log"
 	"github.com/DMXMax/mythic-cli/cmd/roll"
 
+	"github.com/peterh/liner"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -50,38 +52,62 @@ var shellCmd = &cobra.Command{
 	Use:   "shell",
 	Short: "A simple shell, holding token to use interactive commands",
 	Long: `A simple shell, holding token to use interactive commands -- the long version
-	Examples go here.
+    Examples go here.
 `,
 
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Split(bufio.ScanLines)
+		// Use liner to get arrow-key history and line editing
+		l := liner.NewLiner()
+		defer l.Close()
+		l.SetCtrlCAborts(true)
+
+		// Load/save persistent history
+		home, _ := os.UserHomeDir()
+		histPath := filepath.Join(home, ".mythic-cli_history")
+		if f, err := os.Open(histPath); err == nil {
+			_, _ = l.ReadHistory(f)
+			_ = f.Close()
+		}
+		defer func() {
+			if f, err := os.Create(histPath); err == nil {
+				_, _ = l.WriteHistory(f)
+				_ = f.Close()
+			}
+		}()
+
 		for {
+			var prompt string
 			if gdb.Current != nil {
 				g := gdb.Current
 				oddsName := chart.OddsStrList[g.Odds]
-				fmt.Printf("%s (C:%d O:%s)> ", g.Name, g.Chaos, oddsName)
+				prompt = fmt.Sprintf("%s (C:%d O:%s)> ", g.Name, g.Chaos, oddsName)
 			} else {
-				fmt.Print("shell> ")
+				prompt = "shell> "
 			}
 
-			if !scanner.Scan() {
-				if err := scanner.Err(); err != nil {
-					return err
-				}
+			line, err := l.Prompt(prompt)
+			if err == liner.ErrPromptAborted { // Ctrl-C
 				cmd.Println("Goodbye!")
 				return nil
 			}
+			if err == io.EOF { // Ctrl-D
+				cmd.Println("Goodbye!")
+				return nil
+			}
+			if err != nil {
+				return err
+			}
 
-			input := strings.TrimSpace(scanner.Text())
+			input := strings.TrimSpace(line)
 			if input == "" {
 				continue
 			}
-			fields := strings.Fields(input)
+			l.AppendHistory(input)
 
+			fields := strings.Fields(input)
 			newCmd, newArgs, err := cmd.Find(fields)
 			if err != nil {
 				cmd.Println(err)
