@@ -10,6 +10,7 @@ A command-line tool for solo RPG gaming using the Mythic Game Master Emulator sy
 - **Story Logging**: Automatic logging of dice rolls and game events
 - **Chaos Factor Management**: Dynamic chaos factor tracking for story complexity
 - **Character and Scene Management**: Tools for managing game elements
+- **Markdown Export**: Export a game and its log via a customizable template
 - **Robust Error Handling**: Comprehensive validation and user feedback
 - **Flexible Game Creation**: Multiple ways to create games with custom chaos factors and default odds
 
@@ -67,6 +68,8 @@ Tips:
 - `game save` - Save the current game
 - `game list` - List all available games
 - `game chaos <value>` - Set the chaos factor (1-9)
+- `game remove <name>` - Remove a game and all of its log entries
+- `game export [name] [-o <file>] [-t <template>] [-f]` - Export current or named game to Markdown using a template (see Export section)
 
 #### Dice Rolling
 
@@ -148,6 +151,15 @@ shell> game create "Epic Journey" --chaos 6
 
 # The 'new' alias still works for backward compatibility
 shell> game new "Legacy Game"
+
+# Export the current game to Markdown (prompts if file exists)
+shell> game export
+
+# Export a named game to a specific file path without prompting
+shell> game export "My Adventure" -o exports/my-adventure.md -f
+
+# Use a custom template for export
+shell> game export -t data/templates/game.md.tmpl
 ```
 
 ## Game Mechanics
@@ -214,6 +226,7 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Interactive Shell History**: Up/Down arrow-key history with persistent storage at `~/.mythic-cli_history`
 - **Roll Odds Helper**: `-o ?` prints available odds and their indices
 - **Normalized Odds Input**: Case-insensitive matching; accepts common forms like `50/50`; clearer suggestions on ambiguity
+- **Game Export**: Export games to Markdown using a template with safe overwrite prompts and a `--force` option
 
 ### Command Improvements
 
@@ -228,6 +241,23 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Enhanced Shell Stability**: Multiple commands in sequence now work correctly
 - **Cleaner Output**: Removed verbose logging messages for better user experience
 - **Silent Database Operations**: GORM database logs are now hidden from users
+
+## Exporting to Markdown
+
+Use `game export` to render a game and its log to a Markdown file via a Go text/template.
+
+- Default template: `data/templates/game.md.tmpl`
+- Default output file: `<game>.md`
+- Overwrite behavior: If the output file exists, the CLI prompts before overwriting. Use `-f/--force` to overwrite without prompting.
+
+Common flags:
+- `-o, --out <file>`: Output path (e.g., `exports/mygame.md`)
+- `-t, --template <path>`: Template file path
+- `-f, --force`: Overwrite existing output without prompting
+
+Template helpers available:
+- `formatTime .CreatedAt "2006-01-02 15:04:05"` – format timestamps
+- `oddsName .Odds` – turn the numeric odds into a name (e.g., "likely")
 
 ## Development
 

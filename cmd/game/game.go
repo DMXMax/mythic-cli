@@ -36,4 +36,5 @@ func init() {
     GameCmd.AddCommand(gameListCmd)
     GameCmd.AddCommand(oddsCmd)
     GameCmd.AddCommand(removeCmd)
+    GameCmd.AddCommand(exportCmd)
 }

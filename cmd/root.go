@@ -4,24 +4,25 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
+    "fmt"
+    "io"
+    "os"
+    "path/filepath"
+    "strings"
 
-	"github.com/DMXMax/mge/chart"
+    "github.com/DMXMax/mge/chart"
 
-	"github.com/DMXMax/mythic-cli/cmd/scene"
-	gdb "github.com/DMXMax/mythic-cli/util/game"
+    "github.com/DMXMax/mythic-cli/cmd/scene"
+    gdb "github.com/DMXMax/mythic-cli/util/game"
 
-	"github.com/DMXMax/mythic-cli/cmd/game"
-	gamelog "github.com/DMXMax/mythic-cli/cmd/log"
-	"github.com/DMXMax/mythic-cli/cmd/roll"
+    "github.com/DMXMax/mythic-cli/cmd/game"
+    gamelog "github.com/DMXMax/mythic-cli/cmd/log"
+    "github.com/DMXMax/mythic-cli/cmd/roll"
 
-	"github.com/peterh/liner"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+    "github.com/DMXMax/mythic-cli/util/input"
+    "github.com/peterh/liner"
+    "github.com/spf13/cobra"
+    "github.com/spf13/pflag"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -60,9 +61,11 @@ var shellCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Use liner to get arrow-key history and line editing
-		l := liner.NewLiner()
-		defer l.Close()
-		l.SetCtrlCAborts(true)
+        l := liner.NewLiner()
+        defer l.Close()
+        l.SetCtrlCAborts(true)
+        // Make liner available to commands for sub-prompts
+        input.SetPrompter(l)
 
 		// Load/save persistent history
 		home, _ := os.UserHomeDir()
