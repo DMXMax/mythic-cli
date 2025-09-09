@@ -11,7 +11,7 @@ A command-line tool for solo RPG gaming using the Mythic Game Master Emulator sy
 - **Chaos Factor Management**: Dynamic chaos factor tracking for story complexity
 - **Character and Scene Management**: Tools for managing game elements
 - **Robust Error Handling**: Comprehensive validation and user feedback
-- **Flexible Game Creation**: Multiple ways to create games with custom chaos factors
+- **Flexible Game Creation**: Multiple ways to create games with custom chaos factors and default odds
 
 ## Installation
 
@@ -59,6 +59,7 @@ This will give you a command prompt where you can enter various commands.
 - `game create <name> [--chaos <value>]` - Create a new game with optional chaos factor
 - `game create <name> [-x <value>]` - Create a new game with short chaos flag
 - `game new <name>` - Alias for `game create` (backward compatibility)
+- `game create <name> [--odds <value>]` - Create a new game with optional default odds
 - `game load <name>` - Load an existing game
 - `game save` - Save the current game
 - `game list` - List all available games
@@ -186,6 +187,7 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Enhanced Game Creation**: The `game new` command has been renamed to `game create` for better clarity
 - **Improved Error Handling**: Added comprehensive validation for chaos factors and game parameters
 - **Better User Feedback**: Clear confirmation messages when creating or selecting games
+- **Default Odds Setting**: Games can now be created with a default odds value
 - **Flexible Flag Options**: Support for both long (`--chaos`) and short (`-x`) flags
 - **Backward Compatibility**: The `new` alias still works for existing users
 - **Robust Validation**: Chaos factor validation using proper range checking (1-9)

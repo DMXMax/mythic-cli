@@ -32,8 +32,8 @@ var createCmd = &cobra.Command{
 		}
 
 		// Validate chaos factor range
-		if chaos < chart.MIN_CHAOS || chaos > chart.MAX_CHAOS {
-			return fmt.Errorf("chaos must be between %d and %d", chart.MIN_CHAOS, chart.MAX_CHAOS)
+		if chaos < chart.MinChaos || chaos > chart.MaxChaos {
+			return fmt.Errorf("chaos must be between %d and %d", chart.MinChaos, chart.MaxChaos)
 		}
 
 		// Try to find the game in the database
@@ -50,6 +50,7 @@ var createCmd = &cobra.Command{
 			newGame := &gdb.Game{
 				Name:  name,
 				Chaos: chaos,
+				Odds:  5, // Default odds: Likely
 			}
 			// Save the new game to the database
 			if err := db.GamesDB.Create(newGame).Error; err != nil {

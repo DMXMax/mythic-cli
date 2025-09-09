@@ -56,7 +56,7 @@ var printCmd = &cobra.Command{
 
 		//g.GetGameLog(2) // should get the most current log with a limit
 		for _, s := range g.Log {
-			fmt.Println(s.Msg)
+			fmt.Printf("%s - %s\n", s.CreatedAt.Format("2006-01-02 15:04:05"), s.Msg)
 		}
 
 		return nil

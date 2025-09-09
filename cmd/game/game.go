@@ -34,4 +34,5 @@ func init() {
 	GameCmd.AddCommand(chaosCmd)
 	GameCmd.AddCommand(loadCmd)
 	GameCmd.AddCommand(gameListCmd)
+	GameCmd.AddCommand(oddsCmd)
 }

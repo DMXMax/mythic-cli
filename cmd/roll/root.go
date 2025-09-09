@@ -1,32 +1,33 @@
 package roll
 
 import (
-	"fmt"
+    "fmt"
 
-	"strconv"
+    "strconv"
+    "strings"
 
-	"github.com/DMXMax/mge/chart"
-	"github.com/DMXMax/mythic-cli/util/db"
-	gdb "github.com/DMXMax/mythic-cli/util/game"
-	"github.com/rs/zerolog/log"
-	"github.com/spf13/cobra"
+    "github.com/DMXMax/mge/chart"
+    "github.com/DMXMax/mythic-cli/util/db"
+    gdb "github.com/DMXMax/mythic-cli/util/game"
+    "github.com/rs/zerolog/log"
+    "github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var RollCmd = &cobra.Command{
-	Use:   "roll",
+	Use:   "roll [message]",
 	Short: "Rolls on the Mythic Fate Chart",
-	Long: `Rolls on the Mythic chart using the game chosen chaos factor and
-	provided odds. If the odds are not selected, they remain at 50/50.
+	Long: `Rolls on the Mythic chart using the game's chaos factor and odds.
+A message for the roll is optional. If provided, it will be logged with the result.
 	The chaos factor can be set with the -c flag.
 	The odds can be set with the -o flag.`,
 	RunE: RollFunc,
 }
 
-// if there's a game, use its chaos value. If not, use a default of 4 unless it's set.
 func RollFunc(cmd *cobra.Command, args []string) error {
-	var odds chart.Odds
-	g := gdb.Current
+    var odds chart.Odds
+    messageArgs := args
+    g := gdb.Current
 
 	// Get chaos value from flag
 	chaosValue, err := cmd.Flags().GetInt8("chaos")
@@ -49,36 +50,56 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// try to convert odds to a number. If not, try to match it to a string
-	parsed, err := strconv.ParseInt(oddsStr, 10, 8)
-	if err != nil { // not a number, try to match it to a string
-		matches := chart.MatchOddNametoOdds(oddsStr)
-		if len(matches) == 0 {
-			err := fmt.Errorf("invalid odds: %s", oddsStr)
-			log.Error().Err(err).Msg("Invalid odds")
-			return err
+    // Use game's odds if not explicitly set, otherwise parse the flag
+    if !cmd.Flags().Changed("odds") && g != nil {
+        odds = chart.Odds(g.Odds)
+    } else {
+        // Normalize input for odds string
+        normalized := normalizeOddsInput(oddsStr)
 
-		}
-		if len(matches) != 1 { // multiple possible odds
+        // Provide helper listing when -o ? is used
+        if normalized == "?" {
+            printOddsHelp()
+            return nil
+        }
 
-			fmt.Println("Did you mean one of these odds?")
-			for _, match := range matches {
-				fmt.Printf("%d : %s\n", match, chart.OddsStrList[match])
-			}
-			return fmt.Errorf("multiple possible odds")
-		}
+        // Try numeric odds first
+        parsed, err := strconv.ParseInt(normalized, 10, 8)
+        if err == nil {
+            if parsed < 0 || parsed > 8 {
+                return fmt.Errorf("odds must be between 0 and 8")
+            }
+            odds = chart.Odds(parsed)
+        } else { // not a number, try to match it to a string
+            matches := chart.MatchOddsPrefix(normalized)
+            if len(matches) == 0 {
+                err := fmt.Errorf("invalid odds: '%s'", oddsStr)
+                log.Error().Err(err).Msg("Invalid odds")
+                return err
+            }
+            if len(matches) != 1 { // multiple possible odds
+                fmt.Println("Did you mean one of these odds?")
+                for _, match := range matches {
+                    fmt.Printf("%d : %s\n", match, chart.OddsStrList[match])
+                }
+                return fmt.Errorf("multiple possible odds for '%s'", oddsStr)
+            }
 
-		odds = chart.Odds(matches[0])
+            odds = chart.Odds(matches[0])
+        }
+    }
 
-	} else {
-		odds = chart.Odds(parsed)
+	message := strings.Join(messageArgs, " ")
+	if len(message) > 256 {
+		return fmt.Errorf("message cannot be longer than 256 characters")
 	}
-
 	result := chart.FateChart.RollOdds(odds, int(chaosValue))
 
-	fmt.Println(result)
+	logMessage := strings.TrimSpace(fmt.Sprintf("%s (C:%d) -> %s", message, chaosValue, result))
+
+	fmt.Println(logMessage)
 	if gdb.Current != nil {
-		gdb.Current.AddtoGameLog(1, result.String())
+		gdb.Current.AddtoGameLog(1, logMessage)
 		// Persist the game state, including the new log entry
 		if err := db.GamesDB.Save(gdb.Current).Error; err != nil {
 			return fmt.Errorf("failed to save game after roll: %w", err)
@@ -90,6 +111,32 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
-	RollCmd.Flags().StringP("odds", "o", "5", "set the odds for the roll (name or number)")
+    RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
+    RollCmd.Flags().StringP("odds", "o", "5", "set the odds for the roll (name or number, use -o ? to list)")
+}
+
+// normalizeOddsInput lowercases, trims, and standardizes simple variants
+// like hyphens and common numeric forms for the odds name.
+func normalizeOddsInput(s string) string {
+    s = strings.TrimSpace(strings.ToLower(s))
+    // normalize common separators to spaces
+    s = strings.ReplaceAll(s, "—", " ") // em dash
+    s = strings.ReplaceAll(s, "-", " ")
+    s = strings.ReplaceAll(s, "_", " ")
+    // collapse all whitespace sequences
+    s = strings.Join(strings.Fields(s), " ")
+    // common alias for fifty fifty
+    switch s {
+    case "50/50", "50-50", "50 50", "50\u00A050":
+        return "fifty fifty"
+    }
+    return s
+}
+
+// printOddsHelp prints available odds names and their indices
+func printOddsHelp() {
+    fmt.Println("Available odds:")
+    for i, name := range chart.OddsStrList {
+        fmt.Printf("%d : %s\n", i, name)
+    }
 }
