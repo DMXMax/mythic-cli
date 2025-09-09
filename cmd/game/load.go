@@ -1,36 +1,43 @@
 package game
 
 import (
-	"fmt"
+    "fmt"
+    "strings"
 
-	"github.com/DMXMax/mythic-cli/util/db"
-	gdb "github.com/DMXMax/mythic-cli/util/game"
-	"github.com/spf13/cobra"
+    "github.com/DMXMax/mythic-cli/util/db"
+    gdb "github.com/DMXMax/mythic-cli/util/game"
+    "github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var loadCmd = &cobra.Command{
-	Use:   "load",
-	Short: "load a game from a file",
-	Long:  `Load a game from a given file. `,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		// Cobra handles flag parsing automatically
-		if gameName == "" {
-			return fmt.Errorf("no file specified")
-		}
+    Use:   "load [name]",
+    Short: "load a game",
+    Long:  `Load a game by name. You can pass the name as a positional argument or via --name.`,
+    RunE: func(cmd *cobra.Command, args []string) error {
+        // Accept either positional name or --name flag for convenience
+        var name string
+        if len(args) > 0 {
+            name = args[0]
+        } else {
+            name = gameName
+        }
+        if strings.TrimSpace(name) == "" {
+            return fmt.Errorf("no game name specified")
+        }
 
-		g := &gdb.Game{Name: gameName}
-		result := db.GamesDB.Preload("Log").Where(g).First(g)
+        g := &gdb.Game{Name: name}
+        result := db.GamesDB.Preload("Log").Where(g).First(g)
 
-		if result.Error == nil {
-			gdb.Current = g
-			cmd.Printf("Loaded game: %s (Chaos: %d)\n", g.Name, g.Chaos)
-		} else {
-			return fmt.Errorf("could not load game '%s': %w", gameName, result.Error)
-		}
+        if result.Error == nil {
+            gdb.Current = g
+            cmd.Printf("Loaded game: %s (Chaos: %d)\n", g.Name, g.Chaos)
+        } else {
+            return fmt.Errorf("could not load game '%s': %w", name, result.Error)
+        }
 
-		return nil
-	},
+        return nil
+    },
 }
 var gameName string
 

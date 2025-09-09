@@ -29,10 +29,11 @@ var GameCmd = &cobra.Command{
 }
 
 func init() {
-	GameCmd.AddCommand(createCmd)
-	GameCmd.AddCommand(saveCmd)
-	GameCmd.AddCommand(chaosCmd)
-	GameCmd.AddCommand(loadCmd)
-	GameCmd.AddCommand(gameListCmd)
-	GameCmd.AddCommand(oddsCmd)
+    GameCmd.AddCommand(createCmd)
+    GameCmd.AddCommand(saveCmd)
+    GameCmd.AddCommand(chaosCmd)
+    GameCmd.AddCommand(loadCmd)
+    GameCmd.AddCommand(gameListCmd)
+    GameCmd.AddCommand(oddsCmd)
+    GameCmd.AddCommand(removeCmd)
 }

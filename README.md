@@ -49,7 +49,10 @@ To begin using the Mythic CLI, start the interactive shell:
 ./mythic-cli shell
 ```
 
-This will give you a command prompt where you can enter various commands.
+This opens a command prompt with line editing and command history.
+Tips:
+- Up/Down arrows navigate history (persisted at `~/.mythic-cli_history`).
+- Press Ctrl-C or Ctrl-D to exit; or type `quit`.
 
 ### Basic Commands
 
@@ -68,15 +71,28 @@ This will give you a command prompt where you can enter various commands.
 #### Dice Rolling
 
 - `roll` - Roll on the Mythic fate chart with current game settings (default: likely odds, game's chaos factor)
-- `roll -o <odds>` - Roll with specific odds (e.g., "impossible", "very unlikely", "unlikely", "50/50", "likely", "very likely", "nearly certain", "certain")
+- `roll -o <odds>` - Roll with specific odds (case-insensitive; accepts names like "nearly certain" or formats like `50/50`)
+- `roll -o ?` - List all available odds names and their numeric values
 - `roll -c <chaos>` - Roll with specific chaos factor (1-9) and default odds
 - `roll -o <odds> -c <chaos>` - Roll with both specific odds and chaos factor
 - `roll --help` - Show detailed help for the roll command
 
+Odds input notes:
+- Quote multi-word odds: `-o "nearly certain"` (or use the numeric value, e.g., `-o 7`).
+- `-o 50/50` works without quotes and is normalized to "fifty fifty".
+- On ambiguous input, the CLI suggests close matches without consuming your message text.
+
 #### Logging
 
-- `log` - Show recent game log entries
-- `log <number>` - Show last N log entries
+- `log print` - Show recent game log entries
+- `log print <number>` - Show last N log entries
+- `log remove <number>` - Remove last N log entries
+- `log add <message>` - Add a log entry
+- `log remove` - Remove all log entries
+- `log --help` - Show detailed help for the log command
+- `log` same as `log print`
+
+
 
 #### Scene Management
 
@@ -195,6 +211,9 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Fixed Roll Command**: Dice rolling now works correctly with all flag combinations
 - **Database Constraint Fixes**: Games with duplicate names are now handled gracefully
 - **Improved User Experience**: Removed verbose trace and debug messages for cleaner output
+- **Interactive Shell History**: Up/Down arrow-key history with persistent storage at `~/.mythic-cli_history`
+- **Roll Odds Helper**: `-o ?` prints available odds and their indices
+- **Normalized Odds Input**: Case-insensitive matching; accepts common forms like `50/50`; clearer suggestions on ambiguity
 
 ### Command Improvements
 
@@ -205,6 +224,7 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Fixed Shell Flag Handling**: Commands now properly parse flags and handle default values
 - **Fixed Database Issues**: UNIQUE constraint errors resolved for duplicate game names
 - **Improved Roll Command**: Fixed chaos factor and odds parsing issues
+- **Roll UX**: Odds parsing no longer steals the first word of your message
 - **Enhanced Shell Stability**: Multiple commands in sequence now work correctly
 - **Cleaner Output**: Removed verbose logging messages for better user experience
 - **Silent Database Operations**: GORM database logs are now hidden from users
