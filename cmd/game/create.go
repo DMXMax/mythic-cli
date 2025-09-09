@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/DMXMax/mge/chart"
@@ -40,12 +41,13 @@ var createCmd = &cobra.Command{
 		var game gdb.Game
 		result := db.GamesDB.Preload("Log").Where("name = ?", name).First(&game)
 
-		if result.Error == nil {
+		switch err := result.Error; {
+		case err == nil:
 			// Game found, set it as current
 			gdb.Current = &game
 			log.Info().Str("game", name).Msg("Selected existing game")
 			cmd.Printf("Selected existing game: %s (Chaos: %d)\n", name, game.Chaos)
-		} else if result.Error == gorm.ErrRecordNotFound {
+		case errors.Is(err, gorm.ErrRecordNotFound):
 			// Game not found, create a new one
 			newGame := &gdb.Game{
 				Name:  name,
@@ -59,9 +61,9 @@ var createCmd = &cobra.Command{
 			gdb.Current = newGame
 			log.Info().Str("game", name).Int8("chaos", chaos).Msg("Created new game")
 			cmd.Printf("Created new game: %s (Chaos: %d)\n", name, newGame.Chaos)
-		} else {
+		default:
 			// Another database error occurred
-			return fmt.Errorf("error checking for game '%s': %w", name, result.Error)
+			return fmt.Errorf("error checking for game '%s': %w", name, err)
 		}
 
 		return nil
