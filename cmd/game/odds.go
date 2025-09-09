@@ -29,7 +29,7 @@ var oddsCmd = &cobra.Command{
 			// try to convert odds to a number. If not, try to match it to a string
 			parsed, err := strconv.ParseInt(oddsStr, 10, 8)
 			if err != nil { // not a number, try to match it to a string
-				matches := chart.MatchOddNametoOdds(oddsStr)
+				matches := chart.MatchOddsPrefix(oddsStr)
 				if len(matches) == 0 {
 					return fmt.Errorf("invalid odds: %s", oddsStr)
 				}

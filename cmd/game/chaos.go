@@ -26,8 +26,8 @@ var chaosCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("invalid chaos value: %s", err)
 			}
-			if set < chart.MIN_CHAOS || set > chart.MAX_CHAOS {
-				return fmt.Errorf("chaos must be between %d and %d", chart.MIN_CHAOS, chart.MAX_CHAOS)
+			if set < chart.MinChaos || set > chart.MaxChaos {
+				return fmt.Errorf("chaos must be between %d and %d", chart.MinChaos, chart.MaxChaos)
 			}
 			g.SetChaos(int8(set))
 			fmt.Printf("Chaos factor set to %d\n", set)
