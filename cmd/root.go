@@ -107,7 +107,6 @@ var shellCmd = &cobra.Command{
 			if input == "" {
 				continue
 			}
-			l.AppendHistory(input)
 
 			fields := strings.Fields(input)
 			newCmd, newArgs, err := cmd.Find(fields)
@@ -150,6 +149,7 @@ var shellCmd = &cobra.Command{
 					}
 				} else if newCmd.Run != nil {
 					newCmd.Run(newCmd, newCmd.Flags().Args())
+					l.AppendHistory(input)
 				}
 
 				// Reset flags on the executed command to avoid carry-over in the shell
