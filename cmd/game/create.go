@@ -39,7 +39,7 @@ var createCmd = &cobra.Command{
 
 		// Try to find the game in the database
 		var game gdb.Game
-		result := db.GamesDB.Preload("Log").Where("name = ?", name).First(&game)
+		result := db.GamesDB.Where("name = ?", name).First(&game)
 
 		switch err := result.Error; {
 		case err == nil:

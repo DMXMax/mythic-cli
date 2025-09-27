@@ -1,8 +1,10 @@
-github.com/DMXMax/mge v0.1.2 h1:LepG1SOSteKxWDnhIs7pED283dgRD35DDRSM+XpooQs=
-github.com/DMXMax/mge v0.1.2/go.mod h1:+Q4JqjOg/qaD73/9esOL8bQZfBVHLIameyrOxhrfRbs=
+github.com/DMXMax/mge v0.2.0 h1:UG4OWMqATOOFMjyxrwJlf3Ifyb0W9Z43dU6JwKwBpU0=
+github.com/DMXMax/mge v0.2.0/go.mod h1:+Q4JqjOg/qaD73/9esOL8bQZfBVHLIameyrOxhrfRbs=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=

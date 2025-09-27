@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -47,6 +48,9 @@ Perfect for solo RPG adventures, GM-less gaming, and story generation.`,
 		return nil
 	},
 }
+
+// errQuit is a sentinel error to signal a clean exit from the shell.
+var errQuit = errors.New("user requested quit")
 
 var shellCmd = &cobra.Command{
 	Use:   "shell",
@@ -120,6 +124,9 @@ var shellCmd = &cobra.Command{
 				continue
 			}
 
+			// Append to history before execution
+			l.AppendHistory(input)
+
 			// Check if help is requested
 			hasHelp := false
 			for _, arg := range newArgs {
@@ -145,11 +152,13 @@ var shellCmd = &cobra.Command{
 				if newCmd.RunE != nil {
 					// After parsing, the non-flag arguments are available via Flags().Args()
 					if err := newCmd.RunE(newCmd, newCmd.Flags().Args()); err != nil {
-						cmd.Println(err)
+						if errors.Is(err, errQuit) {
+							return nil // Gracefully exit the shell loop
+						}
+						cmd.Println(err) // Print other errors
 					}
 				} else if newCmd.Run != nil {
 					newCmd.Run(newCmd, newCmd.Flags().Args())
-					l.AppendHistory(input)
 				}
 
 				// Reset flags on the executed command to avoid carry-over in the shell
@@ -180,8 +189,7 @@ var shellQuitCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.Println("Goodbye!")
-		os.Exit(0)
-		return nil
+		return errQuit
 	},
 }
 

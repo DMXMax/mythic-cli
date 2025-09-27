@@ -1,11 +1,10 @@
 module github.com/DMXMax/mythic-cli
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.25.1
 
 require (
-	github.com/DMXMax/mge v0.1.2
+	github.com/DMXMax/mge v0.2.0
+	github.com/google/uuid v1.6.0
 	github.com/peterh/liner v1.2.2
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.1

@@ -1,7 +1,10 @@
 package game
 
 import (
+	"time"
+
 	"github.com/DMXMax/mythic-cli/util/db"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -9,7 +12,7 @@ type LogEntry struct {
 	gorm.Model
 	Type   int
 	Msg    string
-	GameID uint
+	GameID uuid.UUID `gorm:"type:uuid"`
 }
 
 type Character struct {
@@ -19,11 +22,19 @@ type Character struct {
 	Skills  map[string]int
 }
 type Game struct {
-	gorm.Model
-	Name  string `gorm:"unique"` // Name of the game
-	Chaos int8   // Current Chaos level
-	Odds  int8   // Current default odds
-	Log   []LogEntry
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Name      string         // Name of the game
+	Chaos     int8           // Current Chaos level
+	Odds      int8           // Current default odds
+	Log       []LogEntry
+}
+
+func (g *Game) BeforeCreate(tx *gorm.DB) (err error) {
+	g.ID = uuid.New()
+	return
 }
 
 // Current is the current game running. Its nil if there is no game set
