@@ -3,16 +3,25 @@ package game
 import (
 	"time"
 
+	"github.com/DMXMax/mge/util/theme"
 	"github.com/DMXMax/mythic-cli/util/db"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type LogEntry struct {
-	gorm.Model
-	Type   int
-	Msg    string
-	GameID uuid.UUID `gorm:"type:uuid"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Type      int
+	Msg       string
+	GameID    uuid.UUID `gorm:"type:uuid"`
+}
+
+func (l *LogEntry) BeforeCreate(tx *gorm.DB) (err error) {
+	l.ID = uuid.New()
+	return
 }
 
 type Character struct {
@@ -22,14 +31,15 @@ type Character struct {
 	Skills  map[string]int
 }
 type Game struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	Name      string         // Name of the game
-	Chaos     int8           // Current Chaos level
-	Odds      int8           // Current default odds
-	Log       []LogEntry
+	ID          uuid.UUID `gorm:"type:uuid;primary_key;"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	Name        string         // Name of the game
+	Chaos       int8           // Current Chaos level
+	Odds        int8           // Current default odds
+	StoryThemes theme.Themes   `gorm:"type:text"`
+	Log         []LogEntry     `gorm:"foreignKey:GameID"`
 }
 
 func (g *Game) BeforeCreate(tx *gorm.DB) (err error) {

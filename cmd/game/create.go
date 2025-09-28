@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/DMXMax/mge/chart"
+	"github.com/DMXMax/mge/util/theme"
 	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/rs/zerolog/log"
@@ -49,10 +50,13 @@ var createCmd = &cobra.Command{
 			cmd.Printf("Selected existing game: %s (Chaos: %d)\n", name, game.Chaos)
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			// Game not found, create a new one
+
 			newGame := &gdb.Game{
-				Name:  name,
-				Chaos: chaos,
-				Odds:  5, // Default odds: Likely
+				Name:        name,
+				Chaos:       chaos,
+				Odds:        5,
+				StoryThemes: theme.GetThemes(), // Default odds: Likely
+				//Themes: gameThemes,
 			}
 			// Save the new game to the database
 			if err := db.GamesDB.Create(newGame).Error; err != nil {
