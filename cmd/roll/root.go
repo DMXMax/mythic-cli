@@ -113,6 +113,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 func init() {
 	RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
 	RollCmd.Flags().StringP("odds", "o", "5", "set the odds for the roll (name or number, use -o ? to list)")
+	RollCmd.AddCommand(RollFateCmd)
 }
 
 // normalizeOddsInput lowercases, trims, and standardizes simple variants

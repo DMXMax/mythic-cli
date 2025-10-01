@@ -203,7 +203,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	shellCmd.AddCommand(shellQuitCmd, scene.SceneCmd, game.GameCmd,
-		roll.RollCmd, gamelog.LogCmd, shellHelpCommand)
+		roll.RollCmd, roll.RollFateCmd, gamelog.LogCmd, shellHelpCommand)
 
 	rootCmd.AddCommand(shellCmd)
 

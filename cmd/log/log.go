@@ -1,25 +1,25 @@
 package log
 
 import (
-    "fmt"
-    "strconv"
-    "strings"
+	"fmt"
+	"strconv"
+	"strings"
 
-    "github.com/DMXMax/mythic-cli/util/db"
-    gdb "github.com/DMXMax/mythic-cli/util/game"
-    "github.com/spf13/cobra"
+	"github.com/DMXMax/mythic-cli/util/db"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var LogCmd = &cobra.Command{
-    Use:     "gamelog",
-    Aliases: []string{"s", "gl", "log"},
-    Short:   "manage game logs",
-    Long:    `Create New, Save, and Load logs`,
-    RunE: func(cmd *cobra.Command, args []string) error {
-        // Default behavior: print logs, optionally limited by a number
-        return runPrint(args)
-    },
+	Use:     "gamelog",
+	Aliases: []string{"s", "gl", "log"},
+	Short:   "manage game logs",
+	Long:    `Create New, Save, and Load logs`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Default behavior: print logs, optionally limited by a number
+		return runPrint(args)
+	},
 }
 
 var AddGameLogCmd = &cobra.Command{
@@ -44,13 +44,13 @@ var AddGameLogCmd = &cobra.Command{
 }
 
 var printCmd = &cobra.Command{
-    Use:     "print [n]",
-    Aliases: []string{"p"},
-    Short:   "print out story log",
-    Long:    `Print out the story log. Optionally provide a number to print that many recent entries (most recent shown last).`,
-    RunE: func(cmd *cobra.Command, args []string) error {
-        return runPrint(args)
-    },
+	Use:     "print [n]",
+	Aliases: []string{"p"},
+	Short:   "print out story log",
+	Long:    `Print out the story log. Optionally provide a number to print that many recent entries (most recent shown last).`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runPrint(args)
+	},
 }
 
 var removeLogCmd = &cobra.Command{
@@ -77,71 +77,79 @@ var removeLogCmd = &cobra.Command{
 			return fmt.Errorf("number of entries to remove must be positive")
 		}
 
-		logLen := len(g.Log)
-		if n > logLen {
-			fmt.Printf("Cannot remove %d entries, only %d exist. Removing all %d entries.\n", n, logLen, logLen)
-			n = logLen
+		// Fetch the last n entries to be removed
+		var entriesToRemove []gdb.LogEntry
+		q := db.GamesDB.Model(&gdb.LogEntry{}).
+			Where("game_id = ?", g.ID).
+			Order("created_at DESC").
+			Limit(n)
+		if err := q.Find(&entriesToRemove).Error; err != nil {
+			return fmt.Errorf("failed to load log entries for removal: %w", err)
 		}
 
-		if n == 0 {
+		numToRemove := len(entriesToRemove)
+		if numToRemove == 0 {
 			fmt.Println("No log entries to remove.")
 			return nil
 		}
 
-		entriesToRemove := g.Log[logLen-n:]
+		if numToRemove < n {
+			fmt.Printf("Cannot remove %d entries, only %d exist. Removing all %d entries.\n", n, numToRemove, numToRemove)
+		}
 
 		if err := db.GamesDB.Delete(&entriesToRemove).Error; err != nil {
 			return fmt.Errorf("failed to remove log entries from database: %w", err)
 		}
 
-		g.Log = g.Log[:logLen-n]
-		fmt.Printf("Removed last %d log entry(s).\n", n)
+		// Invalidate the in-memory log to force a reload on next `log print`
+		g.Log = nil
+		fmt.Printf("Removed last %d log entry(s).\n", numToRemove)
 		return nil
 	},
 }
 
 func init() {
-    LogCmd.AddCommand(AddGameLogCmd)
-    LogCmd.AddCommand(printCmd)
-    LogCmd.AddCommand(removeLogCmd)
+	LogCmd.AddCommand(AddGameLogCmd)
+	LogCmd.AddCommand(printCmd)
+	LogCmd.AddCommand(removeLogCmd)
 }
 
 // runPrint implements the actual printing logic shared by `log` and `log print`.
 // If args[0] is a positive integer, prints that many most recent entries; otherwise prints a default number.
 func runPrint(args []string) error {
-    if gdb.Current == nil {
-        return fmt.Errorf("no game selected")
-    }
-    g := gdb.Current
+	if gdb.Current == nil {
+		return fmt.Errorf("no game selected")
+	}
+	g := gdb.Current
 
-    // Default to a recent window if no number is specified
-    n := 20
-    var err error
-    if len(args) > 0 {
-        n, err = strconv.Atoi(args[0])
-        if err != nil {
-            return fmt.Errorf("invalid number: %w", err)
-        }
-    }
-    if n <= 0 {
-        return fmt.Errorf("number of entries to print must be positive")
-    }
+	// Default to a recent window if no number is specified
+	n := 20
+	var err error
+	if len(args) > 0 {
+		n, err = strconv.Atoi(args[0])
+		if err != nil {
+			return fmt.Errorf("invalid number: %w", err)
+		}
+	}
+	if n <= 0 {
+		return fmt.Errorf("number of entries to print must be positive")
+	}
 
-    // Fetch the last n entries from DB ordered by newest first
-    var entries []gdb.LogEntry
-    q := db.GamesDB.Model(&gdb.LogEntry{}).
-        Where("game_id = ?", g.ID).
-        Order("created_at DESC").
-        Limit(n)
-    if err := q.Find(&entries).Error; err != nil {
-        return fmt.Errorf("failed to load log entries: %w", err)
-    }
+	// Fetch the last n entries from DB ordered by newest first
+	var entries []gdb.LogEntry
+	q := db.GamesDB.Model(&gdb.LogEntry{}).
+		Where("game_id = ?", g.ID).
+		Order("created_at DESC").
+		Limit(n)
+	if err := q.Find(&entries).Error; err != nil {
+		return fmt.Errorf("failed to load log entries: %w", err)
+	}
 
-    // Print oldest-first for natural reading by reversing the slice
-    for i := len(entries) - 1; i >= 0; i-- {
-        s := entries[i]
-        fmt.Printf("%s - %s\n", s.CreatedAt.Format("2006-01-02 15:04:05"), s.Msg)
-    }
+	// Print oldest-first for natural reading by reversing the slice
+	for i := len(entries) - 1; i >= 0; i-- {
+		s := entries[i]
+		fmt.Printf("%s - %s\n", s.CreatedAt.Format("2006-01-02 15:04:05"), s.Msg)
+	}
 
-    return nil
+	return nil
 }

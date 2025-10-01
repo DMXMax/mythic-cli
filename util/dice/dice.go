@@ -26,6 +26,15 @@ func RollFate() *Roll {
 	return &r
 }
 
+// DiceTotal returns the sum of the dice without any modifiers.
+func (r *Roll) DiceTotal() int {
+	total := 0
+	for _, die := range r.dice {
+		total += die
+	}
+	return total
+}
+
 func (r *Roll) Total() int {
 	total := 0
 	for _, die := range r.dice {
@@ -39,6 +48,6 @@ func (r *Roll) Total() int {
 }
 
 func (r *Roll) String() string {
-	return fmt.Sprintf("{ %d, %d, %d, %d } %d",
-		r.dice[0], r.dice[1], r.dice[2], r.dice[3], r.Total())
+	return fmt.Sprintf("{ %d, %d, %d, %d } %+d",
+		r.dice[0], r.dice[1], r.dice[2], r.dice[3], r.DiceTotal())
 }
