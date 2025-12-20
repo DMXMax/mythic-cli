@@ -1,3 +1,5 @@
+// Package roll provides commands for rolling dice on the Mythic Fate Chart
+// and rolling Fate/Fudge dice (4dF).
 package roll
 
 import (
@@ -13,14 +15,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// RollCmd rolls on the Mythic Fate Chart using the current game's chaos factor and odds.
+// The chaos factor and odds can be overridden with flags.
+// An optional message can be provided which will be logged with the result.
 var RollCmd = &cobra.Command{
 	Use:   "roll [message]",
-	Short: "Rolls on the Mythic Fate Chart",
-	Long: `Rolls on the Mythic chart using the game's chaos factor and odds.
+	Short: "Roll on the Mythic Fate Chart",
+	Long: `Roll on the Mythic chart using the game's chaos factor and odds.
 A message for the roll is optional. If provided, it will be logged with the result.
-	The chaos factor can be set with the -c flag.
-	The odds can be set with the -o flag.`,
+The chaos factor can be set with the -c flag.
+The odds can be set with the -o flag. Use -o ? to list all available odds.`,
 	RunE: RollFunc,
 }
 
@@ -116,8 +120,9 @@ func init() {
 	RollCmd.AddCommand(RollFateCmd)
 }
 
-// normalizeOddsInput lowercases, trims, and standardizes simple variants
-// like hyphens and common numeric forms for the odds name.
+// normalizeOddsInput normalizes odds input by lowercasing, trimming, and standardizing variants.
+// It handles common separators (hyphens, underscores, em dashes) and converts them to spaces,
+// and recognizes common numeric forms like "50/50" and converts them to "fifty fifty".
 func normalizeOddsInput(s string) string {
 	s = strings.TrimSpace(strings.ToLower(s))
 	// normalize common separators to spaces
@@ -134,7 +139,8 @@ func normalizeOddsInput(s string) string {
 	return s
 }
 
-// printOddsHelp prints available odds names and their indices
+// printOddsHelp prints all available odds names and their numeric indices.
+// This is displayed when the user runs "roll -o ?".
 func printOddsHelp() {
 	fmt.Println("Available odds:")
 	for i, name := range chart.OddsStrList {

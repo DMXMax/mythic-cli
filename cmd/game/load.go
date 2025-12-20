@@ -1,20 +1,22 @@
 package game
 
 import (
-    "fmt"
-    "strings"
+	"fmt"
+	"strings"
 
-    "github.com/DMXMax/mythic-cli/util/db"
-    gdb "github.com/DMXMax/mythic-cli/util/game"
-    "github.com/spf13/cobra"
+	"github.com/DMXMax/mythic-cli/util/db"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
+	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// loadCmd loads a game by name and sets it as the current game.
+// The game name can be provided as a positional argument or via the --name flag.
+// All associated log entries are preloaded with the game.
 var loadCmd = &cobra.Command{
-    Use:   "load [name]",
-    Short: "load a game",
-    Long:  `Load a game by name. You can pass the name as a positional argument or via --name.`,
-    RunE: func(cmd *cobra.Command, args []string) error {
+	Use:   "load [name]",
+	Short: "Load a game by name",
+	Long:  `Load a game by name and set it as the current game. You can pass the name as a positional argument or via --name.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
         // Accept either positional name or --name flag for convenience
         var name string
         if len(args) > 0 {
@@ -41,10 +43,11 @@ var loadCmd = &cobra.Command{
 }
 var gameName string
 
+// gameListCmd lists all games stored in the database.
 var gameListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list current games",
-	Long:  `List the games in the database `,
+	Short: "List all games in the database",
+	Long:  `List all games stored in the database. Shows the names of all available games.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Cobra handles flag parsing automatically
 		games := []gdb.Game{}

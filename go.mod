@@ -1,6 +1,6 @@
 module github.com/DMXMax/mythic-cli
 
-go 1.25.1
+go 1.25.5
 
 require (
 	github.com/DMXMax/mge v0.2.1

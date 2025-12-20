@@ -8,27 +8,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// saveCmd saves the current game to the database.
+// This persists all game state including chaos factor, odds, and log entries.
 var saveCmd = &cobra.Command{
 	Use:   "save",
-	Short: "save a game to a file",
-	Long:  `Save a game to a given file name. Currently it will overwrite any existing file.`,
+	Short: "Save the current game to the database",
+	Long:  `Save the current game and all its associated data (chaos factor, odds, log entries) to the database.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gdb.Current == nil {
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		/*		if g.ID == 0 {
-				db.GamesDB.Create(g)
-			} else {*/
-		db.GamesDB.Save(g)
-		//}
+		if err := db.GamesDB.Save(g).Error; err != nil {
+			return fmt.Errorf("failed to save game: %w", err)
+		}
 		fmt.Printf("Game '%s' saved.\n", g.Name)
 
 		return nil
 	},
-}
-
-func init() {
-
 }

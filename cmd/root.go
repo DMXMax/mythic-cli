@@ -1,6 +1,8 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
+// Package cmd provides the command-line interface for the Mythic CLI application.
+// It implements the root command, interactive shell, and command routing.
 package cmd
 
 import (
@@ -26,7 +28,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
+// It displays usage information when invoked directly.
 var rootCmd = &cobra.Command{
 	Use:   "mythic-cli",
 	Short: "Mythic Game Master Emulator CLI",
@@ -40,9 +43,6 @@ Features:
 - Character and scene management
 
 Perfect for solo RPG adventures, GM-less gaming, and story generation.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.Usage()
 		return nil
@@ -50,18 +50,23 @@ Perfect for solo RPG adventures, GM-less gaming, and story generation.`,
 }
 
 // errQuit is a sentinel error to signal a clean exit from the shell.
+// When returned from a command, it causes the shell loop to exit gracefully.
 var errQuit = errors.New("user requested quit")
 
+// shellCmd provides an interactive shell for running Mythic CLI commands.
+// It supports command history, line editing, and a dynamic prompt that shows
+// the current game state (name, chaos factor, and odds).
 var shellCmd = &cobra.Command{
 	Use:   "shell",
-	Short: "A simple shell, holding token to use interactive commands",
-	Long: `A simple shell, holding token to use interactive commands -- the long version
-    Examples go here.
-`,
+	Short: "Start an interactive shell for game management",
+	Long: `Start an interactive shell that allows you to run Mythic CLI commands
+with persistent history and line editing support.
 
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+The shell prompt displays the current game name, chaos factor (C), and odds (O)
+when a game is loaded. Use 'quit' or press Ctrl-C/Ctrl-D to exit.
+
+Command history is persisted to ~/.mythic-cli_history and can be navigated
+using the Up/Down arrow keys.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Use liner to get arrow-key history and line editing
 		l := liner.NewLiner()
@@ -173,6 +178,7 @@ var shellCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
+// If execution fails, the program exits with code 1.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -180,13 +186,11 @@ func Execute() {
 	}
 }
 
+// shellQuitCmd allows the user to gracefully exit the interactive shell.
 var shellQuitCmd = &cobra.Command{
 	Use:   "quit",
-	Short: "Quit the shell",
-	Long:  `Quit the shell, but longer`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "Quit the interactive shell",
+	Long:  `Exit the interactive shell. You can also use Ctrl-C or Ctrl-D to exit.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.Println("Goodbye!")
 		return errQuit
@@ -194,27 +198,23 @@ var shellQuitCmd = &cobra.Command{
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli-test.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	// Register all subcommands for the interactive shell
 	shellCmd.AddCommand(shellQuitCmd, scene.SceneCmd, game.GameCmd,
 		roll.RollCmd, roll.RollFateCmd, gamelog.LogCmd, shellHelpCommand)
 
+	// Add the shell command to the root command
 	rootCmd.AddCommand(shellCmd)
 
+	// Root command flags (currently unused, but available for future use)
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	//shellCmd.SetUsageTemplate(Template)
 }
 
+// shellHelpCommand provides help functionality within the interactive shell.
+// It allows users to get help for any command by typing "help <command>".
 var shellHelpCommand = &cobra.Command{
 	Use:   "help",
-	Short: "Shell help",
-	Long:  `Provides detailed shell help help`,
+	Short: "Show help for commands",
+	Long:  `Show help information for commands. Use "help <command>" to get detailed help for a specific command.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		newcmd, _, err := cmd.Parent().Find(args)
 		if err != nil {

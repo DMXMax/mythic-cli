@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// infoCmd displays comprehensive information about the current game,
+// including its name, story themes, and the most recent log entries.
 var infoCmd = &cobra.Command{
 	Use:     "info",
 	Aliases: []string{"i"},

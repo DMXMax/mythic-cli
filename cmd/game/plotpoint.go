@@ -8,12 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// plotPointCmd represents the base command for managing plot points.
+// plotPointCmd generates a random plot point based on the current game's story themes.
+// It rolls on the plot chart and selects a random theme to generate a plot point description.
+// Use the --verbose flag to see detailed information about the roll and modifiers.
 var plotPointCmd = &cobra.Command{
 	Use:     "plotpoint",
 	Aliases: []string{"pp", "plot"},
-	Short:   "Manage plot points for the current game",
-	Long:    `Manage plot points for the current game. You can add, list, and resolve plot points.`,
+	Short:   "Generate a random plot point for the current game",
+	Long:    `Generate a random plot point based on the current game's story themes. Use --verbose to see roll details.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		roll := rand.Intn(100) + 1
 		pickTheme := gdb.Current.StoryThemes.GetRandomTheme() // By default, if no subcommand is given, show help.

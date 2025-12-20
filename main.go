@@ -17,11 +17,15 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// main is the entry point for the Mythic CLI application.
+// It initializes the database connection and executes the root command.
 func main() {
-
 	cmd.Execute()
 }
 
+// init initializes the application by setting up logging and database connections.
+// It creates the data directory if it doesn't exist, opens a SQLite database connection,
+// and performs automatic database migrations for Game and LogEntry models.
 func init() {
 	// Set logging level to Error to hide all non-critical messages from users
 	log.Logger = log.Level(zerolog.ErrorLevel)

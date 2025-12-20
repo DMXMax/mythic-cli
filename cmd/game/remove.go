@@ -11,11 +11,13 @@ import (
 
 var removeName string
 
-// removeCmd removes a game and its associated log entries
+// removeCmd permanently removes a game and all its associated log entries from the database.
+// If the removed game is currently selected, the current game is cleared.
+// The game name can be provided as a positional argument or via the --name flag.
 var removeCmd = &cobra.Command{
 	Use:     "remove [name]",
 	Aliases: []string{"rm", "delete", "del"},
-	Short:   "remove a game and its logs",
+	Short:   "Remove a game and all its logs",
 	Long:    `Remove a game by name. This also removes all associated log entries. You can pass the name as a positional argument or via --name.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name string

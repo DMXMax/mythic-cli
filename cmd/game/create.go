@@ -13,12 +13,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// createCmd represents the command to create or select a game
+// createCmd creates a new game or selects an existing one if a game with the same name exists.
+// If a game with the given name already exists, it is loaded and set as the current game.
+// Otherwise, a new game is created with the specified chaos factor (default: 4).
 var createCmd = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"c", "new"},
-	Short:   "create or select a game",
-	Long:    `Create a new game with a supplied name. If the game already exists, it will be selected.`,
+	Short:   "Create a new game or select an existing one",
+	Long: `Create a new game with a supplied name. If a game with that name already exists,
+it will be selected and set as the current game instead of creating a duplicate.
+
+The chaos factor can be specified with the --chaos or -x flag (default: 4).
+Valid chaos factor range is 1-9.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Validate required arguments
 		if len(args) < 1 {
@@ -54,9 +60,8 @@ var createCmd = &cobra.Command{
 			newGame := &gdb.Game{
 				Name:        name,
 				Chaos:       chaos,
-				Odds:        5,
-				StoryThemes: theme.GetThemes(), // Default odds: Likely
-				//Themes: gameThemes,
+				Odds:        5, // Default odds: Likely
+				StoryThemes: theme.GetThemes(),
 			}
 			// Save the new game to the database
 			if err := db.GamesDB.Create(newGame).Error; err != nil {

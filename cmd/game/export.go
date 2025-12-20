@@ -15,6 +15,7 @@ import (
     "github.com/spf13/cobra"
 )
 
+// defaultTemplatePath is the default path for the game export template.
 const defaultTemplatePath = "data/templates/game.md.tmpl"
 
 var (
@@ -23,7 +24,9 @@ var (
     exportForce        bool
 )
 
-// exportCmd renders a game to a Markdown file using a template file
+// exportCmd exports a game to a Markdown file using a Go text/template.
+// If no game name is provided, the current game is exported.
+// The export includes all game data and log entries formatted according to the template.
 var exportCmd = &cobra.Command{
     Use:   "export [name]",
     Short: "export a game to Markdown",
@@ -105,6 +108,9 @@ func init() {
     exportCmd.Flags().BoolVarP(&exportForce, "force", "f", false, "overwrite output file without prompting")
 }
 
+// sanitizeFilename sanitizes a string to be safe for use as a filename.
+// It replaces path separators and problematic characters with hyphens
+// and collapses whitespace sequences.
 func sanitizeFilename(s string) string {
     s = strings.TrimSpace(s)
     // Replace path separators and problematic characters

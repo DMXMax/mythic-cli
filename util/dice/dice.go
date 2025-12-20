@@ -1,3 +1,5 @@
+// Package dice provides dice rolling utilities for Fate/Fudge dice (4dF).
+// Fate dice have three faces: -1, 0, and +1, resulting in a range from -4 to +4.
 package dice
 
 import (
@@ -5,19 +7,23 @@ import (
 	"math/rand"
 )
 
-// RollModifier is a struct that holds the modifier and a description of the modifier
+// RollModifier represents a modifier applied to a dice roll.
+// It contains both the numeric modifier value and a description of what it represents.
 type RollModifier struct {
-	Mod         int8
-	Description string
+	Mod         int8  // The numeric modifier value
+	Description string // A description of what this modifier represents (e.g., "skill", "bonus")
 }
 
-// Roll is a struct that holds the dice and a description of the roll
+// Roll represents a Fate/Fudge dice roll (4dF).
+// Each die can be -1, 0, or +1, giving a total range of -4 to +4.
 type Roll struct {
-	dice        [4]int
-	Description string
-	Modifiers   []RollModifier
+	dice        [4]int         // The four dice values (-1, 0, or +1)
+	Description string         // Optional description of the roll
+	Modifiers   []RollModifier // List of modifiers to apply to the roll
 }
 
+// RollFate rolls four Fate/Fudge dice and returns a new Roll instance.
+// Each die has an equal chance of being -1, 0, or +1.
 func RollFate() *Roll {
 	r := Roll{}
 	for i := range r.dice {
@@ -26,7 +32,8 @@ func RollFate() *Roll {
 	return &r
 }
 
-// DiceTotal returns the sum of the dice without any modifiers.
+// DiceTotal returns the sum of the four dice without any modifiers.
+// This represents the raw dice result before applying modifiers.
 func (r *Roll) DiceTotal() int {
 	total := 0
 	for _, die := range r.dice {
@@ -35,6 +42,8 @@ func (r *Roll) DiceTotal() int {
 	return total
 }
 
+// Total returns the sum of the dice plus all modifiers.
+// This is the final result of the roll after all modifiers are applied.
 func (r *Roll) Total() int {
 	total := 0
 	for _, die := range r.dice {
@@ -47,6 +56,8 @@ func (r *Roll) Total() int {
 	return total
 }
 
+// String returns a string representation of the roll.
+// Format: "{ d1, d2, d3, d4 } +total" where total is the dice total without modifiers.
 func (r *Roll) String() string {
 	return fmt.Sprintf("{ %d, %d, %d, %d } %+d",
 		r.dice[0], r.dice[1], r.dice[2], r.dice[3], r.DiceTotal())

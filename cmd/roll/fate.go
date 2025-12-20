@@ -14,12 +14,15 @@ var skillValue int
 var difficultyValue int
 var opposedRoll bool
 
-// RollFateCmd represents the command to roll Fate dice.
+// RollFateCmd rolls 4 Fate/Fudge dice (4dF), which can result in a value from -4 to +4.
+// An optional skill value can be added to the roll total.
+// An optional difficulty can be provided to compare against the total.
+// The --opposed flag makes the difficulty an opposed roll (adds 4dF to the difficulty value).
 var RollFateCmd = &cobra.Command{
 	Use:     "rollfate [message]",
 	Aliases: []string{"rf"},
-	Short:   "Rolls 4 Fate/Fudge dice (4dF)",
-	Long: `Rolls 4 Fate/Fudge dice, which result in a value from -4 to +4.
+	Short:   "Roll 4 Fate/Fudge dice (4dF)",
+	Long: `Roll 4 Fate/Fudge dice, which result in a value from -4 to +4.
 An optional message can be provided to be included in the log.
 An optional skill value can be added to the roll total using the --skill flag.
 An optional difficulty can be provided with the --difficulty flag to compare against the total.
@@ -104,6 +107,13 @@ func init() {
 	RollFateCmd.Flags().BoolVarP(&opposedRoll, "opposed", "o", false, "make the difficulty an opposed roll")
 }
 
+// getOutcomeString converts a numeric outcome (difference between roll and difficulty)
+// into a descriptive string for Fate dice rolls.
+// Outcomes:
+//   - >= 3: Success With Style
+//   - > 0: Success
+//   - < 0: Fail
+//   - 0: Tie
 func getOutcomeString(outcome int) string {
 	if outcome >= 3 {
 		return "Success With Style"

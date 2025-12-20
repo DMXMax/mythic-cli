@@ -10,7 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// oddsCmd represents the command to set the odds for the game
+// oddsCmd sets or displays the default odds for the current game.
+// The odds determine the base probability for fate chart rolls.
+// Can be specified as a number (0-8) or a name (e.g., "likely", "50/50", "nearly certain").
+// If no value is provided, it displays the current default odds.
 var oddsCmd = &cobra.Command{
 	Use:     "odds [value]",
 	Aliases: []string{"o"},

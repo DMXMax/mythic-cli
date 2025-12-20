@@ -1,3 +1,5 @@
+// Package log provides commands for managing game story logs.
+// Logs contain all dice rolls, story events, and narrative entries for a game.
 package log
 
 import (
@@ -10,23 +12,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// LogCmd is the root command for managing game logs.
+// When invoked without subcommands, it prints recent log entries (default: last 20).
+// An optional number can be provided to limit the number of entries shown.
 var LogCmd = &cobra.Command{
 	Use:     "gamelog",
 	Aliases: []string{"s", "gl", "log"},
-	Short:   "manage game logs",
-	Long:    `Create New, Save, and Load logs`,
+	Short:   "Manage game logs",
+	Long:    `Manage game story logs including viewing, adding, and removing entries.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Default behavior: print logs, optionally limited by a number
 		return runPrint(args)
 	},
 }
 
+// AddGameLogCmd adds a new entry to the current game's story log.
+// The entry is immediately persisted to the database.
 var AddGameLogCmd = &cobra.Command{
 	Use:     "add",
 	Aliases: []string{"a"},
-	Short:   "add to game log",
-	Long:    `Add Entry to game story log. `,
+	Short:   "Add an entry to the game log",
+	Long:    `Add an entry to the game story log. The entry is immediately saved to the database.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		if gdb.Current == nil {
@@ -43,20 +49,26 @@ var AddGameLogCmd = &cobra.Command{
 	},
 }
 
+// printCmd prints recent log entries from the current game.
+// An optional number can be provided to limit the number of entries (default: 20).
+// Entries are displayed in chronological order (oldest first).
 var printCmd = &cobra.Command{
 	Use:     "print [n]",
 	Aliases: []string{"p"},
-	Short:   "print out story log",
+	Short:   "Print recent log entries",
 	Long:    `Print out the story log. Optionally provide a number to print that many recent entries (most recent shown last).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runPrint(args)
 	},
 }
 
+// removeLogCmd removes the last n log entries from the current game.
+// If no number is provided, it removes the last entry.
+// The entries are permanently deleted from the database.
 var removeLogCmd = &cobra.Command{
 	Use:     "remove [n]",
 	Aliases: []string{"rm"},
-	Short:   "remove last n log entries",
+	Short:   "Remove the last n log entries",
 	Long:    "Remove the last n log entries. If n is not provided, removes the last one.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gdb.Current == nil {
@@ -115,7 +127,8 @@ func init() {
 }
 
 // runPrint implements the actual printing logic shared by `log` and `log print`.
-// If args[0] is a positive integer, prints that many most recent entries; otherwise prints a default number.
+// It fetches the most recent n entries from the database and displays them in chronological order.
+// If args[0] is a positive integer, it prints that many most recent entries; otherwise prints a default number (20).
 func runPrint(args []string) error {
 	if gdb.Current == nil {
 		return fmt.Errorf("no game selected")

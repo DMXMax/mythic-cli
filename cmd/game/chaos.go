@@ -10,11 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// chaosCmd sets or displays the chaos factor for the current game.
+// The chaos factor (1-9) affects the likelihood of extreme results in dice rolls.
+// Higher chaos values increase the chance of exceptional outcomes.
+// If no value is provided, it displays the current chaos factor.
 var chaosCmd = &cobra.Command{
 	Use:   "chaos [value]",
 	Short: "Set or show the chaos factor for the game",
-	Long:  `Set or show the chaos factor for the game (1-9).`,
+	Long:  `Set or show the chaos factor for the game (1-9). Higher values increase the chance of extreme results.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		g := gdb.Current
 		if g == nil {

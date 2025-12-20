@@ -1,5 +1,7 @@
 package cmd
 
+// Template is a custom usage template for Cobra commands.
+// It provides a formatted display of command usage, aliases, examples, subcommands, and flags.
 var Template = `Usage:{{if .Runnable}}
 {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
 {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
