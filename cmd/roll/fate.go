@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DMXMax/mge/util/dice"
 	"github.com/DMXMax/mythic-cli/util/db"
-	"github.com/DMXMax/mythic-cli/util/dice"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/spf13/cobra"
 )
