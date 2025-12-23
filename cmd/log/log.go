@@ -21,6 +21,14 @@ var LogCmd = &cobra.Command{
 	Short:   "Manage game logs",
 	Long:    `Manage game story logs including viewing, adding, and removing entries.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// If an argument is provided, validate it's a number before calling runPrint
+		if len(args) > 0 {
+			// Check if it's a valid number
+			if _, err := strconv.Atoi(args[0]); err != nil {
+				// Not a number - suggest valid subcommands
+				return fmt.Errorf("unknown argument: %q\n\nAvailable subcommands:\n  add, print, remove\n\nUse \"log <number>\" to print that many entries, or \"log --help\" for more information", args[0])
+			}
+		}
 		// Default behavior: print logs, optionally limited by a number
 		return runPrint(args)
 	},
@@ -54,7 +62,7 @@ var AddGameLogCmd = &cobra.Command{
 // Entries are displayed in chronological order (oldest first).
 var printCmd = &cobra.Command{
 	Use:     "print [n]",
-	Aliases: []string{"p"},
+	Aliases: []string{"p", "list", "l"},
 	Short:   "Print recent log entries",
 	Long:    `Print out the story log. Optionally provide a number to print that many recent entries (most recent shown last).`,
 	RunE: func(cmd *cobra.Command, args []string) error {

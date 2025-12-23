@@ -19,7 +19,6 @@ var GameCmd = &cobra.Command{
 Games have:
 - A name for identification
 - A chaos factor (1-9) that affects dice roll outcomes
-- Default odds (0-8) for fate chart rolls
 - A story log of all events and dice rolls
 - Story themes for plot generation
 
@@ -43,7 +42,6 @@ func init() {
 	GameCmd.AddCommand(chaosCmd)
 	GameCmd.AddCommand(loadCmd)
 	GameCmd.AddCommand(gameListCmd)
-	GameCmd.AddCommand(oddsCmd)
 	GameCmd.AddCommand(removeCmd)
 	GameCmd.AddCommand(exportCmd)
 	GameCmd.AddCommand(infoCmd)

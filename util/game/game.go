@@ -40,15 +40,14 @@ type Character struct {
 }
 
 // Game represents a Mythic game session with all its associated data.
-// Each game has a name, chaos factor, default odds, story themes, and a log of events.
+// Each game has a name, chaos factor, story themes, and a log of events.
 type Game struct {
 	ID          uuid.UUID      `gorm:"type:uuid;primary_key;"`
 	CreatedAt   time.Time      // When the game was created
 	UpdatedAt   time.Time      // When the game was last updated
 	DeletedAt   gorm.DeletedAt `gorm:"index"` // Soft delete support
-	Name        string         // Name of the game
+	Name        string         `gorm:"uniqueIndex"` // Name of the game (unique)
 	Chaos       int8           // Current Chaos level (1-9)
-	Odds        int8           // Current default odds (0-8)
 	StoryThemes theme.Themes   `gorm:"type:text"`         // Story themes for plot generation
 	Log         []LogEntry     `gorm:"foreignKey:GameID"` // Associated log entries
 }
@@ -68,13 +67,6 @@ var Current *Game
 // Valid range is 1-9.
 func (g *Game) SetChaos(v int8) {
 	g.Chaos = v
-}
-
-// SetOdds sets the default odds for the game.
-// The odds determine the base probability for fate chart rolls.
-// Valid range is 0-8 (Impossible to Certain).
-func (g *Game) SetOdds(v int8) {
-	g.Odds = v
 }
 
 // AddtoGameLog adds a new entry to the game's in-memory log.

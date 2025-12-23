@@ -18,13 +18,15 @@ var loadCmd = &cobra.Command{
 	Long:  `Load a game by name and set it as the current game. You can pass the name as a positional argument or via --name.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
         // Accept either positional name or --name flag for convenience
+        // Join all args to handle multi-word names (e.g., "Kat in Shadow")
         var name string
         if len(args) > 0 {
-            name = args[0]
+            name = strings.Join(args, " ")
         } else {
             name = gameName
         }
-        if strings.TrimSpace(name) == "" {
+        name = strings.TrimSpace(name)
+        if name == "" {
             return fmt.Errorf("no game name specified")
         }
 

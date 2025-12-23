@@ -3,6 +3,8 @@ package game
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/DMXMax/mge/chart"
 	"github.com/DMXMax/mge/util/theme"
@@ -31,7 +33,43 @@ Valid chaos factor range is 1-9.`,
 			return fmt.Errorf("create requires a name")
 		}
 
-		name := args[0]
+		// Join all args to handle multi-word names (e.g., "Kat in Shadow")
+		name := strings.Join(args, " ")
+
+		// Trim whitespace
+		name = strings.TrimSpace(name)
+
+		// Normalize multiple consecutive spaces to single space
+		name = regexp.MustCompile("  +").ReplaceAllString(name, " ")
+
+		if name == "" {
+			return fmt.Errorf("game name cannot be empty")
+		}
+
+		// Validate minimum length
+		if len(name) < 3 {
+			return fmt.Errorf("game name must be at least 3 characters")
+		}
+
+		// Validate maximum length
+		if len(name) > 32 {
+			return fmt.Errorf("game name cannot be longer than 32 characters")
+		}
+
+		// Validate characters (alphanumeric + spaces)
+		matched, _ := regexp.MatchString("^[a-zA-Z0-9 ]+$", name)
+		if !matched {
+			return fmt.Errorf("game name can only contain letters, numbers, and spaces (a-z, A-Z, 0-9, space)")
+		}
+
+		// Block reserved names
+		reservedNames := []string{"current", "list"}
+		nameLower := strings.ToLower(name)
+		for _, reserved := range reservedNames {
+			if nameLower == reserved {
+				return fmt.Errorf("game cannot be named '%s'", name)
+			}
+		}
 
 		// Get chaos value from flag (Cobra handles flag parsing automatically)
 		chaos, err := cmd.Flags().GetInt8("chaos")
@@ -53,14 +91,13 @@ Valid chaos factor range is 1-9.`,
 			// Game found, set it as current
 			gdb.Current = &game
 			log.Info().Str("game", name).Msg("Selected existing game")
-			cmd.Printf("Selected existing game: %s (Chaos: %d)\n", name, game.Chaos)
+			cmd.Printf("Game '%s' already exists - loaded existing game (Chaos: %d)\n", name, game.Chaos)
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			// Game not found, create a new one
 
 			newGame := &gdb.Game{
 				Name:        name,
 				Chaos:       chaos,
-				Odds:        5, // Default odds: Likely
 				StoryThemes: theme.GetThemes(),
 			}
 			// Save the new game to the database

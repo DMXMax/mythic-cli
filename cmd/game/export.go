@@ -35,7 +35,8 @@ var exportCmd = &cobra.Command{
         // Determine target game name
         var name string
         if len(args) > 0 {
-            name = strings.TrimSpace(args[0])
+            // Join all args to handle multi-word names (e.g., "Kat in Shadow")
+            name = strings.TrimSpace(strings.Join(args, " "))
         } else if gdb.Current != nil {
             name = gdb.Current.Name
         }

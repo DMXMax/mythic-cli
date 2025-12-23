@@ -30,15 +30,18 @@ func init() {
 	// Set logging level to Error to hide all non-critical messages from users
 	log.Logger = log.Level(zerolog.ErrorLevel)
 
-	dbDir := "data"
-	dbPath := filepath.Join(dbDir, "games.db")
+	// Use default path in home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic("failed to get home directory: " + err.Error())
+	}
+	dbPath := filepath.Join(homeDir, ".mythic-db", "games.db")
 
 	// Ensure the database directory exists
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
 		panic("failed to create data directory: " + err.Error())
 	}
 
-	var err error
 	db.GamesDB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})

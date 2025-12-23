@@ -5,14 +5,14 @@ A command-line tool for solo RPG gaming using the Mythic Game Master Emulator sy
 ## Features
 
 - **Interactive Shell**: Command-line interface for game management
-- **Dice Rolling**: Mythic fate chart integration with customizable odds and chaos factor
+- **Dice Rolling**: Mythic fate chart integration with customizable odds and chaos factor (odds default to 50/50)
 - **Game State Persistence**: SQLite database for saving and loading games
 - **Story Logging**: Automatic logging of dice rolls and game events
 - **Chaos Factor Management**: Dynamic chaos factor tracking for story complexity
 - **Character and Scene Management**: Tools for managing game elements
 - **Markdown Export**: Export a game and its log via a customizable template
 - **Robust Error Handling**: Comprehensive validation and user feedback
-- **Flexible Game Creation**: Multiple ways to create games with custom chaos factors and default odds
+- **Flexible Game Creation**: Multiple ways to create games with custom chaos factors
 
 ## Installation
 
@@ -77,7 +77,6 @@ Tips:
 - `game save` - Save the current game to the database
 - `game list` - List all available games
 - `game chaos [value]` - Set or show the chaos factor (1-9). If no value provided, shows current chaos
-- `game odds [value]` or `game o [value]` - Set or show the default odds (0-8 or name like "likely", "50/50"). If no value provided, shows current odds
 - `game info` or `game i` - Display detailed information about the current game (name, themes, last 5 log entries)
 - `game plotpoint` or `game pp` or `game plot` - Generate a random plot point based on the game's story themes. Use `--verbose` for detailed roll information
 - `game remove <name>` or `game rm <name>` or `game delete <name>` - Remove a game and all of its log entries
@@ -86,10 +85,10 @@ Tips:
 #### Dice Rolling
 
 **Mythic Fate Chart Rolls:**
-- `roll [message]` - Roll on the Mythic fate chart with current game settings (default: likely odds, game's chaos factor)
-- `roll -o <odds> [message]` - Roll with specific odds (case-insensitive; accepts names like "nearly certain" or formats like `50/50`)
+- `roll [message]` - Roll on the Mythic fate chart with current game's chaos factor (default: 50/50 odds)
+- `roll -o <odds> [message]` - Roll with specific odds (case-insensitive; accepts names like "nearly certain" or formats like `50/50`, default: 50/50)
 - `roll -o ?` - List all available odds names and their numeric values
-- `roll -c <chaos> [message]` - Roll with specific chaos factor (1-9) and default odds
+- `roll -c <chaos> [message]` - Roll with specific chaos factor (1-9) and default 50/50 odds
 - `roll -o <odds> -c <chaos> [message]` - Roll with both specific odds and chaos factor
 - `roll --help` - Show detailed help for the roll command
 
@@ -202,10 +201,6 @@ shell> game export "My Adventure" -o exports/my-adventure.md -f
 # Use a custom template for export
 shell> game export -t data/templates/game.md.tmpl
 
-# Set default odds for the current game
-shell> game odds "likely"
-Default odds set to likely
-
 # Show current game information
 shell> game info
 
@@ -233,12 +228,12 @@ The chaos factor (1-9) affects the likelihood of extreme results:
 
 ### Odds
 
-The Mythic system uses descriptive odds:
+When rolling on the fate chart, you can specify odds (default: 50/50):
 - **Impossible** (0)
 - **Nearly Impossible** (1)
 - **Very Unlikely** (2)
 - **Unlikely** (3)
-- **Fifty Fifty** (4)
+- **Fifty Fifty** (4) - Default
 - **Likely** (5)
 - **Very Likely** (6)
 - **Nearly Certain** (7)
@@ -256,7 +251,7 @@ Rolls can result in:
 
 ## Data Storage
 
-Games are automatically saved to a SQLite database (`data/games.db`) with the following information:
+Games are automatically saved to a SQLite database (`~/.mythic-db/games.db`) with the following information:
 - Game name and metadata
 - Current chaos factor
 - Complete log of all dice rolls and events
@@ -275,7 +270,6 @@ Games are automatically saved to a SQLite database (`data/games.db`) with the fo
 - **Enhanced Game Creation**: The `game new` command has been renamed to `game create` for better clarity
 - **Improved Error Handling**: Added comprehensive validation for chaos factors and game parameters
 - **Better User Feedback**: Clear confirmation messages when creating or selecting games
-- **Default Odds Setting**: Games can now be created with a default odds value
 - **Flexible Flag Options**: Support for both long (`--chaos`) and short (`-x`) flags
 - **Backward Compatibility**: The `new` alias still works for existing users
 - **Robust Validation**: Chaos factor validation using proper range checking (1-9)
@@ -317,7 +311,7 @@ Common flags:
 
 Template helpers available:
 - `formatTime .CreatedAt "2006-01-02 15:04:05"` – format timestamps
-- `oddsName .Odds` – turn the numeric odds into a name (e.g., "likely")
+- `oddsName <value>` – turn a numeric odds value (0-8) into a name (e.g., "likely")
 
 ## Development
 

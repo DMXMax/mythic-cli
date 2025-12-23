@@ -15,16 +15,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RollCmd rolls on the Mythic Fate Chart using the current game's chaos factor and odds.
+// RollCmd rolls on the Mythic Fate Chart using the current game's chaos factor.
 // The chaos factor and odds can be overridden with flags.
 // An optional message can be provided which will be logged with the result.
 var RollCmd = &cobra.Command{
 	Use:   "roll [message]",
 	Short: "Roll on the Mythic Fate Chart",
-	Long: `Roll on the Mythic chart using the game's chaos factor and odds.
+	Long: `Roll on the Mythic chart using the game's chaos factor.
 A message for the roll is optional. If provided, it will be logged with the result.
 The chaos factor can be set with the -c flag.
-The odds can be set with the -o flag. Use -o ? to list all available odds.`,
+The odds can be set with the -o flag (default: 50/50). Use -o ? to list all available odds.`,
 	RunE: RollFunc,
 }
 
@@ -54,9 +54,9 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Use game's odds if not explicitly set, otherwise parse the flag
-	if !cmd.Flags().Changed("odds") && g != nil {
-		odds = chart.Odds(g.Odds)
+	// Parse odds - default to 50/50 (FiftyFifty = 4) if not explicitly set
+	if !cmd.Flags().Changed("odds") {
+		odds = chart.FiftyFifty // Default to 50/50
 	} else {
 		// Normalize input for odds string
 		normalized := normalizeOddsInput(oddsStr)
@@ -116,7 +116,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 
 func init() {
 	RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
-	RollCmd.Flags().StringP("odds", "o", "5", "set the odds for the roll (name or number, use -o ? to list)")
+	RollCmd.Flags().StringP("odds", "o", "fifty", "set the odds for the roll (name or number, default: 50/50, use -o ? to list)")
 	RollCmd.AddCommand(RollFateCmd)
 }
 

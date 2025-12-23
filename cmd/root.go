@@ -13,8 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/DMXMax/mge/chart"
-
 	"github.com/DMXMax/mythic-cli/cmd/scene"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 
@@ -55,14 +53,14 @@ var errQuit = errors.New("user requested quit")
 
 // shellCmd provides an interactive shell for running Mythic CLI commands.
 // It supports command history, line editing, and a dynamic prompt that shows
-// the current game state (name, chaos factor, and odds).
+// the current game state (name and chaos factor).
 var shellCmd = &cobra.Command{
 	Use:   "shell",
 	Short: "Start an interactive shell for game management",
 	Long: `Start an interactive shell that allows you to run Mythic CLI commands
 with persistent history and line editing support.
 
-The shell prompt displays the current game name, chaos factor (C), and odds (O)
+The shell prompt displays the current game name and chaos factor (C)
 when a game is loaded. Use 'quit' or press Ctrl-C/Ctrl-D to exit.
 
 Command history is persisted to ~/.mythic-cli_history and can be navigated
@@ -93,8 +91,7 @@ using the Up/Down arrow keys.`,
 			var prompt string
 			if gdb.Current != nil {
 				g := gdb.Current
-				oddsName := chart.OddsStrList[g.Odds]
-				prompt = fmt.Sprintf("%s (C:%d O:%s)> ", g.Name, g.Chaos, oddsName)
+				prompt = fmt.Sprintf("%s (C:%d)> ", g.Name, g.Chaos)
 			} else {
 				prompt = "shell> "
 			}

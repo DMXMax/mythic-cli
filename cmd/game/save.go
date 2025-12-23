@@ -9,11 +9,11 @@ import (
 )
 
 // saveCmd saves the current game to the database.
-// This persists all game state including chaos factor, odds, and log entries.
+// This persists all game state including chaos factor and log entries.
 var saveCmd = &cobra.Command{
 	Use:   "save",
 	Short: "Save the current game to the database",
-	Long:  `Save the current game and all its associated data (chaos factor, odds, log entries) to the database.`,
+	Long:  `Save the current game and all its associated data (chaos factor, log entries) to the database.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gdb.Current == nil {
 			return fmt.Errorf("no game selected")

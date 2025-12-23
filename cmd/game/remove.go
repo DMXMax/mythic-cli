@@ -22,7 +22,8 @@ var removeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name string
 		if len(args) > 0 {
-			name = args[0]
+			// Join all args to handle multi-word names (e.g., "Kat in Shadow")
+			name = strings.Join(args, " ")
 		} else {
 			name = removeName
 		}
