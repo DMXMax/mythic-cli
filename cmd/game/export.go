@@ -13,6 +13,7 @@ import (
     gdb "github.com/DMXMax/mythic-cli/util/game"
     "github.com/DMXMax/mythic-cli/util/input"
     "github.com/spf13/cobra"
+    "gorm.io/gorm"
 )
 
 // defaultTemplatePath is the default path for the game export template.
@@ -44,9 +45,11 @@ var exportCmd = &cobra.Command{
             return fmt.Errorf("no game name specified and no current game selected")
         }
 
-        // Load game with logs
+        // Load game with logs ordered chronologically (oldest first)
         var game gdb.Game
-        if err := db.GamesDB.Preload("Log").Where("name = ?", name).First(&game).Error; err != nil {
+        if err := db.GamesDB.Preload("Log", func(tx *gorm.DB) *gorm.DB {
+            return tx.Order("created_at ASC")
+        }).Where("name = ?", name).First(&game).Error; err != nil {
             return fmt.Errorf("failed to load game '%s': %w", name, err)
         }
 

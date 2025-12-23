@@ -66,6 +66,10 @@ var printCmd = &cobra.Command{
 	Short:   "Print recent log entries",
 	Long:    `Print out the story log. Optionally provide a number to print that many recent entries (most recent shown last).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Check if help was requested
+		if len(args) > 0 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h") {
+			return cmd.Help()
+		}
 		return runPrint(args)
 	},
 }
@@ -79,6 +83,11 @@ var removeLogCmd = &cobra.Command{
 	Short:   "Remove the last n log entries",
 	Long:    "Remove the last n log entries. If n is not provided, removes the last one.",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Check if help was requested
+		if len(args) > 0 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h") {
+			return cmd.Help()
+		}
+
 		if gdb.Current == nil {
 			return fmt.Errorf("no game selected")
 		}

@@ -27,7 +27,8 @@ If no game is selected, it shows usage information.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		g := gdb.Current
 		if g != nil {
-			cmd.Println("Current Game:", *g)
+			cmd.Printf("Current Game: %s (Chaos: %d)\n", g.Name, g.Chaos)
+			cmd.Println("Use 'game info' for more details or 'game help' for available commands.")
 		} else {
 			cmd.Usage()
 		}
