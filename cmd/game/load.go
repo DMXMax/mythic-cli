@@ -11,7 +11,6 @@ import (
 
 // loadCmd loads a game by name and sets it as the current game.
 // The game name can be provided as a positional argument or via the --name flag.
-// All associated log entries are preloaded with the game.
 var loadCmd = &cobra.Command{
 	Use:   "load [name]",
 	Short: "Load a game by name",
@@ -31,7 +30,7 @@ var loadCmd = &cobra.Command{
         }
 
         g := &gdb.Game{Name: name}
-        result := db.GamesDB.Preload("Log").Where(g).First(g)
+        result := db.GamesDB.Where(g).First(g)
 
         if result.Error == nil {
             gdb.Current = g

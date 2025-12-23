@@ -47,9 +47,11 @@ var AddGameLogCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		g.AddtoGameLog(0, strings.Join(args, " "))
-		if err := db.GamesDB.Save(g).Error; err != nil {
-			return fmt.Errorf("failed to save game after adding log: %w", err)
+		msg := strings.Join(args, " ")
+		// Create log entry directly in database to avoid duplicates
+		entry := gdb.LogEntry{Type: 0, Msg: msg, GameID: g.ID}
+		if err := db.GamesDB.Create(&entry).Error; err != nil {
+			return fmt.Errorf("failed to save log entry: %w", err)
 		}
 		fmt.Println("Log entry added and game saved.")
 

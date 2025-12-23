@@ -13,7 +13,6 @@ import (
     gdb "github.com/DMXMax/mythic-cli/util/game"
     "github.com/DMXMax/mythic-cli/util/input"
     "github.com/spf13/cobra"
-    "gorm.io/gorm"
 )
 
 // defaultTemplatePath is the default path for the game export template.
@@ -45,13 +44,32 @@ var exportCmd = &cobra.Command{
             return fmt.Errorf("no game name specified and no current game selected")
         }
 
-        // Load game with logs ordered chronologically (oldest first)
+        // Load game first
         var game gdb.Game
-        if err := db.GamesDB.Preload("Log", func(tx *gorm.DB) *gorm.DB {
-            return tx.Order("created_at ASC")
-        }).Where("name = ?", name).First(&game).Error; err != nil {
+        if err := db.GamesDB.Where("name = ?", name).First(&game).Error; err != nil {
             return fmt.Errorf("failed to load game '%s': %w", name, err)
         }
+
+        // Load log entries separately, ordered chronologically (oldest first)
+        // Use DISTINCT to avoid duplicates (in case they exist in the database)
+        var logEntries []gdb.LogEntry
+        if err := db.GamesDB.Where("game_id = ?", game.ID).Order("created_at ASC").Find(&logEntries).Error; err != nil {
+            return fmt.Errorf("failed to load log entries: %w", err)
+        }
+        
+        // Deduplicate by content and timestamp (in case duplicates exist in the database)
+        // This handles cases where the same entry was saved multiple times with different IDs
+        seen := make(map[string]bool)
+        uniqueEntries := []gdb.LogEntry{}
+        for _, entry := range logEntries {
+            // Create a unique key from message, type, and timestamp (to the second)
+            key := fmt.Sprintf("%s|%d|%s", entry.Msg, entry.Type, entry.CreatedAt.Format("2006-01-02 15:04:05"))
+            if !seen[key] {
+                seen[key] = true
+                uniqueEntries = append(uniqueEntries, entry)
+            }
+        }
+        game.Log = uniqueEntries
 
         // Resolve output path
         outPath := exportOutPath

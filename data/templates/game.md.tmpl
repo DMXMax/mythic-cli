@@ -17,10 +17,12 @@
 
 {{if .Log}}
 {{range .Log}}
-### {{formatTime .CreatedAt "2006-01-02 15:04:05"}}
-
-{{.Msg}}
-
+{{$time := formatTime .CreatedAt "15:04:05"}}
+{{if eq .Type 1}}
+- **Roll** *({{$time}})*: {{.Msg}}
+{{else}}
+- {{.Msg}} *({{$time}})*
+{{end}}
 {{end}}
 {{else}}
 No log entries yet.

@@ -19,7 +19,9 @@ var saveCmd = &cobra.Command{
 			return fmt.Errorf("no game selected")
 		}
 		g := gdb.Current
-		if err := db.GamesDB.Save(g).Error; err != nil {
+		// Use Select() to only update game fields, avoiding association saves
+		// This prevents duplicate log entries if Log field is populated
+		if err := db.GamesDB.Model(g).Select("name", "chaos", "story_themes", "updated_at").Updates(g).Error; err != nil {
 			return fmt.Errorf("failed to save game: %w", err)
 		}
 		fmt.Printf("Game '%s' saved.\n", g.Name)

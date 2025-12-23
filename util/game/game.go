@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/DMXMax/mge/util/theme"
-	"github.com/DMXMax/mythic-cli/util/db"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -49,7 +48,7 @@ type Game struct {
 	Name        string         `gorm:"uniqueIndex"` // Name of the game (unique)
 	Chaos       int8           // Current Chaos level (1-9)
 	StoryThemes theme.Themes   `gorm:"type:text"`         // Story themes for plot generation
-	Log         []LogEntry     `gorm:"foreignKey:GameID"` // Associated log entries
+	Log         []LogEntry     `gorm:"foreignKey:GameID"` // Log entries (deprecated: only used for export template; query database directly for log entries)
 }
 
 // BeforeCreate is a GORM hook that generates a UUID for the game before creation.
@@ -69,29 +68,3 @@ func (g *Game) SetChaos(v int8) {
 	g.Chaos = v
 }
 
-// AddtoGameLog adds a new entry to the game's in-memory log.
-// This function only modifies the in-memory struct; the caller is responsible
-// for persisting the change to the database.
-//
-// Parameters:
-//   - t: The type of log entry (0 = story, 1 = dice roll, etc.)
-//   - msg: The message content for the log entry
-func (g *Game) AddtoGameLog(t int, msg string) {
-	entry := LogEntry{Type: t, Msg: msg}
-	g.Log = append(g.Log, entry)
-}
-
-// GetGameLog loads the most recent n log entries from the database into the game's Log field.
-// The entries are ordered by creation date (newest first) and limited to n entries.
-//
-// Parameters:
-//   - n: The number of log entries to load
-//
-// Returns an error if the database query fails.
-func (g *Game) GetGameLog(n int) error {
-	result := db.GamesDB.Preload("Log", func(tx *gorm.DB) *gorm.DB {
-		return tx.Order("created_at DESC").Limit(n).Find(&g.Log)
-	}).Find(&g)
-
-	return result.Error
-}

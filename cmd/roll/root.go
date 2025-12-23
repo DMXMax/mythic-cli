@@ -103,10 +103,10 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 
 	fmt.Println(logMessage)
 	if gdb.Current != nil {
-		gdb.Current.AddtoGameLog(1, logMessage)
-		// Persist the game state, including the new log entry
-		if err := db.GamesDB.Save(gdb.Current).Error; err != nil {
-			return fmt.Errorf("failed to save game after roll: %w", err)
+		// Create log entry directly in database to avoid duplicates
+		entry := gdb.LogEntry{Type: 1, Msg: logMessage, GameID: gdb.Current.ID}
+		if err := db.GamesDB.Create(&entry).Error; err != nil {
+			return fmt.Errorf("failed to save log entry: %w", err)
 		}
 	}
 

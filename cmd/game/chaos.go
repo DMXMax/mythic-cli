@@ -35,7 +35,12 @@ var chaosCmd = &cobra.Command{
 			g.SetChaos(int8(set))
 			fmt.Printf("Chaos factor set to %d\n", set)
 			// Persist the change to the database
-			if err := db.GamesDB.Save(g).Error; err != nil {
+			// Use Select() to only update chaos field, avoiding association saves
+			// This prevents duplicate log entries if Log field is populated
+			chaosValue := int8(set)
+			if err := db.GamesDB.Model(g).Select("chaos", "updated_at").Updates(map[string]interface{}{
+				"chaos": chaosValue,
+			}).Error; err != nil {
 				return fmt.Errorf("failed to save game after changing chaos: %w", err)
 			}
 			return nil
