@@ -1,0 +1,28 @@
+# {{.Name}}
+
+**Chaos Factor:** {{.Chaos}}
+
+**Created:** {{formatTime .CreatedAt "2006-01-02 15:04:05"}}  
+**Last Updated:** {{formatTime .UpdatedAt "2006-01-02 15:04:05"}}
+
+{{if .StoryThemes}}
+## Story Themes
+
+{{range $index, $theme := .StoryThemes}}{{if $theme}}
+- {{$theme}}
+{{end}}{{end}}
+{{end}}
+
+## Game Log
+
+{{if .Log}}
+{{range .Log}}
+### {{formatTime .CreatedAt "2006-01-02 15:04:05"}}
+
+{{.Msg}}
+
+{{end}}
+{{else}}
+No log entries yet.
+{{end}}
+
