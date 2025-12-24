@@ -7,14 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/DMXMax/mge/storage"
 	"github.com/DMXMax/mythic-cli/cmd"
 	"github.com/DMXMax/mythic-cli/util/db"
-	"github.com/DMXMax/mythic-cli/util/game"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 // main is the entry point for the Mythic CLI application.
@@ -37,19 +34,14 @@ func init() {
 	}
 	dbPath := filepath.Join(homeDir, ".mythic-db", "games.db")
 
-	// Ensure the database directory exists
-	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
-		panic("failed to create data directory: " + err.Error())
-	}
-
-	db.GamesDB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	// Initialize database using shared storage package
+	db.GamesDB, err = storage.InitDatabase(dbPath)
 	if err != nil {
 		panic("failed to connect database " + dbPath + ": " + err.Error())
 	}
 
-	err = db.GamesDB.AutoMigrate(&game.Game{}, &game.LogEntry{})
+	// Run migrations for all models (including Thread/Character for future compatibility)
+	err = db.GamesDB.AutoMigrate(&storage.Game{}, &storage.LogEntry{}, &storage.Thread{}, &storage.Character{})
 	if err != nil {
 		panic("failed to migrate database models: " + err.Error())
 	}

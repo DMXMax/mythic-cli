@@ -1,145 +1,137 @@
 package game
 
 import (
-    "fmt"
-    "os"
-    "path/filepath"
-    "strings"
-    "text/template"
-    "time"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+	"time"
 
-    "github.com/DMXMax/mge/chart"
-    "github.com/DMXMax/mythic-cli/util/db"
-    gdb "github.com/DMXMax/mythic-cli/util/game"
-    "github.com/DMXMax/mythic-cli/util/input"
-    "github.com/spf13/cobra"
+	"github.com/DMXMax/mge/chart"
+	"github.com/DMXMax/mge/storage"
+	"github.com/DMXMax/mythic-cli/util/db"
+	gdb "github.com/DMXMax/mythic-cli/util/game"
+	"github.com/DMXMax/mythic-cli/util/input"
+	"github.com/spf13/cobra"
 )
 
 // defaultTemplatePath is the default path for the game export template.
 const defaultTemplatePath = "data/templates/game.md.tmpl"
 
 var (
-    exportTemplatePath string
-    exportOutPath      string
-    exportForce        bool
+	exportTemplatePath string
+	exportOutPath      string
+	exportForce        bool
 )
 
 // exportCmd exports a game to a Markdown file using a Go text/template.
 // If no game name is provided, the current game is exported.
 // The export includes all game data and log entries formatted according to the template.
 var exportCmd = &cobra.Command{
-    Use:   "export [name]",
-    Short: "export a game to Markdown",
-    Long:  "Export a game to a Markdown file using a Go text/template file. If no name is provided, the current game is exported.",
-    RunE: func(cmd *cobra.Command, args []string) error {
-        // Determine target game name
-        var name string
-        if len(args) > 0 {
-            // Join all args to handle multi-word names (e.g., "Kat in Shadow")
-            name = strings.TrimSpace(strings.Join(args, " "))
-        } else if gdb.Current != nil {
-            name = gdb.Current.Name
-        }
-        if name == "" {
-            return fmt.Errorf("no game name specified and no current game selected")
-        }
+	Use:   "export [name]",
+	Short: "export a game to Markdown",
+	Long:  "Export a game to a Markdown file using a Go text/template file. If no name is provided, the current game is exported.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Determine target game name
+		var name string
+		if len(args) > 0 {
+			// Join all args to handle multi-word names (e.g., "Kat in Shadow")
+			name = strings.TrimSpace(strings.Join(args, " "))
+		} else if gdb.Current != nil {
+			name = gdb.Current.Name
+		}
+		if name == "" {
+			return fmt.Errorf("no game name specified and no current game selected")
+		}
 
-        // Load game first
-        var game gdb.Game
-        if err := db.GamesDB.Where("name = ?", name).First(&game).Error; err != nil {
-            return fmt.Errorf("failed to load game '%s': %w", name, err)
-        }
+		// Load game first
+		var game gdb.Game
+		if err := db.GamesDB.Where("name = ?", name).First(&game).Error; err != nil {
+			return fmt.Errorf("failed to load game '%s': %w", name, err)
+		}
 
-        // Load log entries separately, ordered chronologically (oldest first)
-        // Use DISTINCT to avoid duplicates (in case they exist in the database)
-        var logEntries []gdb.LogEntry
-        if err := db.GamesDB.Where("game_id = ?", game.ID).Order("created_at ASC").Find(&logEntries).Error; err != nil {
-            return fmt.Errorf("failed to load log entries: %w", err)
-        }
-        
-        // Deduplicate by content and timestamp (in case duplicates exist in the database)
-        // This handles cases where the same entry was saved multiple times with different IDs
-        seen := make(map[string]bool)
-        uniqueEntries := []gdb.LogEntry{}
-        for _, entry := range logEntries {
-            // Create a unique key from message, type, and timestamp (to the second)
-            key := fmt.Sprintf("%s|%d|%s", entry.Msg, entry.Type, entry.CreatedAt.Format("2006-01-02 15:04:05"))
-            if !seen[key] {
-                seen[key] = true
-                uniqueEntries = append(uniqueEntries, entry)
-            }
-        }
-        game.Log = uniqueEntries
+		// Load log entries separately, ordered chronologically (oldest first)
+		// Use DISTINCT to avoid duplicates (in case they exist in the database)
+		var logEntries []gdb.LogEntry
+		if err := db.GamesDB.Where("game_id = ?", game.ID).Order("created_at ASC").Find(&logEntries).Error; err != nil {
+			return fmt.Errorf("failed to load log entries: %w", err)
+		}
 
-        // Resolve output path
-        outPath := exportOutPath
-        if strings.TrimSpace(outPath) == "" {
-            safe := sanitizeFilename(game.Name)
-            outPath = safe + ".md"
-        }
-        if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil && filepath.Dir(outPath) != "." {
-            return fmt.Errorf("failed to create output directory: %w", err)
-        }
+		// Deduplicate by content and timestamp (in case duplicates exist in the database)
+		// This handles cases where the same entry was saved multiple times with different IDs
+		seen := make(map[string]bool)
+		uniqueEntries := []gdb.LogEntry{}
+		for _, entry := range logEntries {
+			// Create a unique key from message, type, and timestamp (to the second)
+			key := fmt.Sprintf("%s|%d|%s", entry.Msg, entry.Type, entry.CreatedAt.Format("2006-01-02 15:04:05"))
+			if !seen[key] {
+				seen[key] = true
+				uniqueEntries = append(uniqueEntries, entry)
+			}
+		}
+		game.Log = uniqueEntries
 
-        // Parse template
-        tplPath := exportTemplatePath
-        if strings.TrimSpace(tplPath) == "" {
-            tplPath = defaultTemplatePath
-        }
-        funcMap := template.FuncMap{
-            "formatTime": func(t time.Time, layout string) string { return t.Format(layout) },
-            "oddsName":   func(v int8) string { if v < 0 || int(v) >= len(chart.OddsStrList) { return fmt.Sprintf("%d", v) }; return chart.OddsStrList[v] },
-        }
-        tpl, err := template.New(filepath.Base(tplPath)).Funcs(funcMap).ParseFiles(tplPath)
-        if err != nil {
-            return fmt.Errorf("failed to parse template '%s': %w", tplPath, err)
-        }
+		// Resolve output path
+		outPath := exportOutPath
+		if strings.TrimSpace(outPath) == "" {
+			safe := storage.SanitizeFilename(game.Name)
+			outPath = safe + ".md"
+		}
+		if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil && filepath.Dir(outPath) != "." {
+			return fmt.Errorf("failed to create output directory: %w", err)
+		}
 
-        // If the output file exists, prompt to overwrite
-        if info, err := os.Stat(outPath); err == nil && !info.IsDir() && !exportForce {
-            ans, err := input.Ask(fmt.Sprintf("File '%s' already exists. Overwrite? [y/N]: ", outPath))
-            if err != nil {
-                return fmt.Errorf("failed to read confirmation: %w", err)
-            }
-            a := strings.TrimSpace(strings.ToLower(ans))
-            if a != "y" && a != "yes" {
-                return fmt.Errorf("export canceled; file exists: %s", outPath)
-            }
-        }
+		// Parse template
+		tplPath := exportTemplatePath
+		if strings.TrimSpace(tplPath) == "" {
+			tplPath = defaultTemplatePath
+		}
+		funcMap := template.FuncMap{
+			"formatTime": func(t time.Time, layout string) string { return t.Format(layout) },
+			"oddsName": func(v int8) string {
+				if v < 0 || int(v) >= len(chart.OddsStrList) {
+					return fmt.Sprintf("%d", v)
+				}
+				return chart.OddsStrList[v]
+			},
+		}
+		tpl, err := template.New(filepath.Base(tplPath)).Funcs(funcMap).ParseFiles(tplPath)
+		if err != nil {
+			return fmt.Errorf("failed to parse template '%s': %w", tplPath, err)
+		}
 
-        // Create output file
-        f, err := os.Create(outPath)
-        if err != nil {
-            return fmt.Errorf("failed to create output file '%s': %w", outPath, err)
-        }
-        defer f.Close()
+		// If the output file exists, prompt to overwrite
+		if info, err := os.Stat(outPath); err == nil && !info.IsDir() && !exportForce {
+			ans, err := input.Ask(fmt.Sprintf("File '%s' already exists. Overwrite? [y/N]: ", outPath))
+			if err != nil {
+				return fmt.Errorf("failed to read confirmation: %w", err)
+			}
+			a := strings.TrimSpace(strings.ToLower(ans))
+			if a != "y" && a != "yes" {
+				return fmt.Errorf("export canceled; file exists: %s", outPath)
+			}
+		}
 
-        // Execute template with game as root
-        if err := tpl.Execute(f, game); err != nil {
-            return fmt.Errorf("failed to render template: %w", err)
-        }
+		// Create output file
+		f, err := os.Create(outPath)
+		if err != nil {
+			return fmt.Errorf("failed to create output file '%s': %w", outPath, err)
+		}
+		defer f.Close()
 
-        cmd.Printf("Exported game '%s' to %s\n", game.Name, outPath)
-        return nil
-    },
+		// Execute template with game as root
+		if err := tpl.Execute(f, game); err != nil {
+			return fmt.Errorf("failed to render template: %w", err)
+		}
+
+		cmd.Printf("Exported game '%s' to %s\n", game.Name, outPath)
+		return nil
+	},
 }
 
 func init() {
-    exportCmd.Flags().StringVarP(&exportTemplatePath, "template", "t", defaultTemplatePath, "path to the Markdown template file")
-    exportCmd.Flags().StringVarP(&exportOutPath, "out", "o", "", "output Markdown file path (default: <game>.md)")
-    exportCmd.Flags().BoolVarP(&exportForce, "force", "f", false, "overwrite output file without prompting")
-}
-
-// sanitizeFilename sanitizes a string to be safe for use as a filename.
-// It replaces path separators and problematic characters with hyphens
-// and collapses whitespace sequences.
-func sanitizeFilename(s string) string {
-    s = strings.TrimSpace(s)
-    // Replace path separators and problematic characters
-    repl := []string{"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-"}
-    r := strings.NewReplacer(repl...)
-    s = r.Replace(s)
-    // Collapse whitespace
-    s = strings.Join(strings.Fields(s), " ")
-    return s
+	exportCmd.Flags().StringVarP(&exportTemplatePath, "template", "t", defaultTemplatePath, "path to the Markdown template file")
+	exportCmd.Flags().StringVarP(&exportOutPath, "out", "o", "", "output Markdown file path (default: <game>.md)")
+	exportCmd.Flags().BoolVarP(&exportForce, "force", "f", false, "overwrite output file without prompting")
 }
