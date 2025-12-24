@@ -6,6 +6,14 @@ import (
 	"github.com/DMXMax/mge/storage"
 )
 
+// Log entry type constants
+const (
+	LogTypeStory      = 0 // Story/narrative entries
+	LogTypeDiceRoll   = 1 // Dice roll entries
+	LogTypeSceneStart = 2 // Scene start marker
+	LogTypeSceneEnd   = 3 // Scene end marker
+)
+
 // Re-export types from storage package for convenience
 type (
 	Game     = storage.Game
