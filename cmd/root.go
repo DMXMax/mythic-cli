@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DMXMax/mythic-cli/cmd/descriptor"
 	"github.com/DMXMax/mythic-cli/cmd/scene"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 
@@ -197,7 +198,7 @@ var shellQuitCmd = &cobra.Command{
 func init() {
 	// Register all subcommands for the interactive shell
 	shellCmd.AddCommand(shellQuitCmd, scene.SceneCmd, game.GameCmd,
-		roll.RollCmd, roll.RollFateCmd, gamelog.LogCmd, shellHelpCommand)
+		roll.RollCmd, roll.RollFateCmd, gamelog.LogCmd, descriptor.DescriptorCmd, shellHelpCommand)
 
 	// Add the shell command to the root command
 	rootCmd.AddCommand(shellCmd)

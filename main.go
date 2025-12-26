@@ -40,8 +40,8 @@ func init() {
 		panic("failed to connect database " + dbPath + ": " + err.Error())
 	}
 
-	// Run migrations for all models (including Thread/Character for future compatibility)
-	err = db.GamesDB.AutoMigrate(&storage.Game{}, &storage.LogEntry{}, &storage.Thread{}, &storage.Character{})
+	// Run migrations for all models (including Thread/Character/Scene for future compatibility)
+	err = db.GamesDB.AutoMigrate(&storage.Game{}, &storage.LogEntry{}, &storage.Thread{}, &storage.Character{}, &storage.Scene{})
 	if err != nil {
 		panic("failed to migrate database models: " + err.Error())
 	}
