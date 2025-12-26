@@ -91,7 +91,7 @@ Use the --opposed flag to make the difficulty an opposed roll (adds 4dF to the d
 		fmt.Println(logMessage)
 
 		if gdb.Current != nil {
-			entry := gdb.LogEntry{Type: 0, Msg: logMessage, GameID: gdb.Current.ID}
+			entry := gdb.LogEntry{Type: gdb.LogTypeDiceRoll, Msg: logMessage, GameID: gdb.Current.ID}
 			if err := db.GamesDB.Create(&entry).Error; err != nil {
 				return fmt.Errorf("failed to save game after fate roll: %w", err)
 			}

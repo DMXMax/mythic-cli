@@ -104,7 +104,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 	fmt.Println(logMessage)
 	if gdb.Current != nil {
 		// Create log entry directly in database to avoid duplicates
-		entry := gdb.LogEntry{Type: 1, Msg: logMessage, GameID: gdb.Current.ID}
+		entry := gdb.LogEntry{Type: gdb.LogTypeDiceRoll, Msg: logMessage, GameID: gdb.Current.ID}
 		if err := db.GamesDB.Create(&entry).Error; err != nil {
 			return fmt.Errorf("failed to save log entry: %w", err)
 		}

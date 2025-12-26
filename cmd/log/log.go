@@ -49,7 +49,7 @@ var AddGameLogCmd = &cobra.Command{
 		g := gdb.Current
 		msg := strings.Join(args, " ")
 		// Create log entry directly in database to avoid duplicates
-		entry := gdb.LogEntry{Type: 0, Msg: msg, GameID: g.ID}
+		entry := gdb.LogEntry{Type: gdb.LogTypeStory, Msg: msg, GameID: g.ID}
 		if err := db.GamesDB.Create(&entry).Error; err != nil {
 			return fmt.Errorf("failed to save log entry: %w", err)
 		}
@@ -180,7 +180,14 @@ func runPrint(args []string) error {
 	// Print oldest-first for natural reading by reversing the slice
 	for i := len(entries) - 1; i >= 0; i-- {
 		s := entries[i]
-		fmt.Printf("%s - %s\n", s.CreatedAt.Format("2006-01-02 15:04:05"), s.Msg)
+		switch s.Type {
+		case gdb.LogTypeSceneStart:
+			fmt.Printf(">>> Scene: %s\n", s.Msg)
+		case gdb.LogTypeSceneEnd:
+			fmt.Printf("<<< Scene End: %s\n", s.Msg)
+		default:
+			fmt.Printf("%s - %s\n", s.CreatedAt.Format("2006-01-02 15:04:05"), s.Msg)
+		}
 	}
 
 	return nil
