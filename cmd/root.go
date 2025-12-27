@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/DMXMax/mge/chart"
 	"github.com/DMXMax/mythic-cli/cmd/descriptor"
 	"github.com/DMXMax/mythic-cli/cmd/scene"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
@@ -92,7 +93,7 @@ using the Up/Down arrow keys.`,
 			var prompt string
 			if gdb.Current != nil {
 				g := gdb.Current
-				prompt = fmt.Sprintf("%s (C:%d)> ", g.Name, g.Chaos)
+				prompt = fmt.Sprintf("%s (C:%d)> ", g.Name, chart.ChaosInternalToUser(int(g.Chaos)))
 			} else {
 				prompt = "shell> "
 			}

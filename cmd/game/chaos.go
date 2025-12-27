@@ -25,28 +25,30 @@ var chaosCmd = &cobra.Command{
 		}
 		// if there is an argument, set the chaos value
 		if len(args) == 1 {
-			set, err := strconv.Atoi(args[0])
+			userChaos, err := strconv.Atoi(args[0])
 			if err != nil {
 				return fmt.Errorf("invalid chaos value: %s", err)
 			}
-			if set < chart.MinChaos || set > chart.MaxChaos {
-				return fmt.Errorf("chaos must be between %d and %d", chart.MinChaos, chart.MaxChaos)
+			if userChaos < chart.MinChaosUser || userChaos > chart.MaxChaosUser {
+				return fmt.Errorf("chaos must be between %d and %d", chart.MinChaosUser, chart.MaxChaosUser)
 			}
-			g.SetChaos(int8(set))
-			fmt.Printf("Chaos factor set to %d\n", set)
+			// Convert user input (1-9) to internal representation (0-8)
+			internalChaos := int8(chart.ChaosUserToInternal(userChaos))
+			g.SetChaos(internalChaos)
+			fmt.Printf("Chaos factor set to %d\n", userChaos)
 			// Persist the change to the database
 			// Use Select() to only update chaos field, avoiding association saves
 			// This prevents duplicate log entries if Log field is populated
-			chaosValue := int8(set)
 			if err := db.GamesDB.Model(g).Select("chaos", "updated_at").Updates(map[string]interface{}{
-				"chaos": chaosValue,
+				"chaos": internalChaos,
 			}).Error; err != nil {
 				return fmt.Errorf("failed to save game after changing chaos: %w", err)
 			}
 			return nil
 		}
 
-		fmt.Printf("Current Chaos: %d\n", g.Chaos)
+		// Display chaos in user-facing format (1-9)
+		fmt.Printf("Current Chaos: %d\n", chart.ChaosInternalToUser(int(g.Chaos)))
 		return nil
 	},
 }

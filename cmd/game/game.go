@@ -3,6 +3,7 @@
 package game
 
 import (
+	"github.com/DMXMax/mge/chart"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +28,7 @@ If no game is selected, it shows usage information.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		g := gdb.Current
 		if g != nil {
-			cmd.Printf("Current Game: %s (Chaos: %d)\n", g.Name, g.Chaos)
+			cmd.Printf("Current Game: %s (Chaos: %d)\n", g.Name, chart.ChaosInternalToUser(int(g.Chaos)))
 			cmd.Println("Use 'game info' for more details or 'game help' for available commands.")
 		} else {
 			cmd.Usage()

@@ -23,7 +23,7 @@ var RollCmd = &cobra.Command{
 	Short: "Roll on the Mythic Fate Chart",
 	Long: `Roll on the Mythic chart using the game's chaos factor.
 A message for the roll is optional. If provided, it will be logged with the result.
-The chaos factor can be set with the -c flag.
+The chaos factor can be set with the -c flag (1-9).
 The odds can be set with the -o flag (default: 50/50). Use -o ? to list all available odds.`,
 	RunE: RollFunc,
 }
@@ -33,8 +33,8 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 	messageArgs := args
 	g := gdb.Current
 
-	// Get chaos value from flag
-	chaosValue, err := cmd.Flags().GetInt8("chaos")
+	// Get chaos value from flag (user-facing: 1-9)
+	userChaos, err := cmd.Flags().GetInt8("chaos")
 	if err != nil {
 		return fmt.Errorf("failed to get chaos flag: %w", err)
 	}
@@ -45,13 +45,22 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get odds flag: %w", err)
 	}
 
-	// Use game's chaos if not explicitly set, otherwise use default
+	// Determine internal chaos value (0-8)
+	var chaosValue int8
 	if !cmd.Flags().Changed("chaos") {
+		// Use game's chaos if not explicitly set, otherwise use default
 		if g != nil {
 			chaosValue = g.Chaos
 		} else {
-			chaosValue = 4 // default chaos value
+			chaosValue = 4 // default internal chaos value (corresponds to user value 5)
 		}
+	} else {
+		// Validate user chaos input
+		if userChaos < chart.MinChaosUser || userChaos > chart.MaxChaosUser {
+			return fmt.Errorf("chaos must be between %d and %d", chart.MinChaosUser, chart.MaxChaosUser)
+		}
+		// Convert user input (1-9) to internal representation (0-8)
+		chaosValue = int8(chart.ChaosUserToInternal(int(userChaos)))
 	}
 
 	// Parse odds - default to 50/50 (FiftyFifty = 4) if not explicitly set
@@ -99,7 +108,8 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 	}
 	result := chart.FateChart.RollOdds(odds, int(chaosValue))
 
-	logMessage := strings.TrimSpace(fmt.Sprintf("%s (C:%d) -> %s", message, chaosValue, result))
+	// Display chaos in user-facing format (1-9)
+	logMessage := strings.TrimSpace(fmt.Sprintf("%s (C:%d) -> %s", message, chart.ChaosInternalToUser(int(chaosValue)), result))
 
 	fmt.Println(logMessage)
 	if gdb.Current != nil {
@@ -115,7 +125,7 @@ func RollFunc(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RollCmd.Flags().Int8P("chaos", "c", 4, "set the chaos factor for the game")
+	RollCmd.Flags().Int8P("chaos", "c", 5, "set the chaos factor for the game (1-9)")
 	RollCmd.Flags().StringP("odds", "o", "fifty", "set the odds for the roll (name or number, default: 50/50, use -o ? to list)")
 	RollCmd.AddCommand(RollFateCmd)
 }

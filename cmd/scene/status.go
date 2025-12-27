@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DMXMax/mge/chart"
 	"github.com/DMXMax/mge/storage"
 	"github.com/DMXMax/mythic-cli/util/db"
 	gdb "github.com/DMXMax/mythic-cli/util/game"
@@ -36,8 +37,7 @@ var statusCmd = &cobra.Command{
 		cmd.Printf("Current Scene:\n")
 		cmd.Printf("  Type: %s\n", strings.Title(currentScene.Type))
 		cmd.Printf("  Expected Concept: %s\n", currentScene.ExpectedConcept)
-		cmd.Printf("  Chaos Die Roll: %d (Chaos: %d)\n", currentScene.ChaosDieRoll, g.Chaos)
-
+		cmd.Printf("  Chaos Die Roll: %d (Chaos: %d)\n", currentScene.ChaosDieRoll, chart.ChaosInternalToUser(int(g.Chaos)))
 		return nil
 	},
 }
@@ -45,4 +45,3 @@ var statusCmd = &cobra.Command{
 func init() {
 	SceneCmd.AddCommand(statusCmd)
 }
-

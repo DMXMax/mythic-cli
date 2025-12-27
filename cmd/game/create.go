@@ -25,7 +25,7 @@ var createCmd = &cobra.Command{
 	Long: `Create a new game with a supplied name. If a game with that name already exists,
 it will be selected and set as the current game instead of creating a duplicate.
 
-The chaos factor can be specified with the --chaos or -x flag (default: 4).
+The chaos factor can be specified with the --chaos or -x flag (default: 5).
 Valid chaos factor range is 1-9.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Validate required arguments
@@ -42,15 +42,18 @@ Valid chaos factor range is 1-9.`,
 		}
 
 		// Get chaos value from flag (Cobra handles flag parsing automatically)
-		chaos, err := cmd.Flags().GetInt8("chaos")
+		userChaos, err := cmd.Flags().GetInt8("chaos")
 		if err != nil {
 			return fmt.Errorf("failed to get chaos flag: %w", err)
 		}
 
-		// Validate chaos factor range
-		if chaos < chart.MinChaos || chaos > chart.MaxChaos {
-			return fmt.Errorf("chaos must be between %d and %d", chart.MinChaos, chart.MaxChaos)
+		// Validate chaos factor range (user-facing: 1-9)
+		if userChaos < chart.MinChaosUser || userChaos > chart.MaxChaosUser {
+			return fmt.Errorf("chaos must be between %d and %d", chart.MinChaosUser, chart.MaxChaosUser)
 		}
+
+		// Convert user input (1-9) to internal representation (0-8)
+		chaos := int8(chart.ChaosUserToInternal(int(userChaos)))
 
 		// Try to find the game in the database
 		var game gdb.Game
@@ -61,7 +64,7 @@ Valid chaos factor range is 1-9.`,
 			// Game found, set it as current
 			gdb.Current = &game
 			log.Info().Str("game", name).Msg("Selected existing game")
-			cmd.Printf("Game '%s' already exists - loaded existing game (Chaos: %d)\n", name, game.Chaos)
+			cmd.Printf("Game '%s' already exists - loaded existing game (Chaos: %d)\n", name, chart.ChaosInternalToUser(int(game.Chaos)))
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			// Game not found, create a new one
 
@@ -76,7 +79,7 @@ Valid chaos factor range is 1-9.`,
 			}
 			gdb.Current = newGame
 			log.Info().Str("game", name).Int8("chaos", chaos).Msg("Created new game")
-			cmd.Printf("Created new game: %s (Chaos: %d)\n", name, newGame.Chaos)
+			cmd.Printf("Created new game: %s (Chaos: %d)\n", name, chart.ChaosInternalToUser(int(newGame.Chaos)))
 		default:
 			// Another database error occurred
 			return fmt.Errorf("error checking for game '%s': %w", name, err)
@@ -87,5 +90,5 @@ Valid chaos factor range is 1-9.`,
 }
 
 func init() {
-	createCmd.Flags().Int8P("chaos", "x", 4, "set the chaos factor for the game")
+	createCmd.Flags().Int8P("chaos", "x", 5, "set the chaos factor for the game (1-9)")
 }
