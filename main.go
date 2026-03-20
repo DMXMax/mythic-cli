@@ -30,19 +30,19 @@ func init() {
 	// Use default path in home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		panic("failed to get home directory: " + err.Error())
+		log.Fatal().Err(err).Msg("failed to get home directory")
 	}
 	dbPath := filepath.Join(homeDir, ".mythic-db", "games.db")
 
 	// Initialize database using shared storage package
 	db.GamesDB, err = storage.InitDatabase(dbPath)
 	if err != nil {
-		panic("failed to connect database " + dbPath + ": " + err.Error())
+		log.Fatal().Err(err).Str("path", dbPath).Msg("failed to connect database")
 	}
 
 	// Run migrations for all models (including Thread/Character/Scene for future compatibility)
 	err = db.GamesDB.AutoMigrate(&storage.Game{}, &storage.LogEntry{}, &storage.Thread{}, &storage.Character{}, &storage.Scene{})
 	if err != nil {
-		panic("failed to migrate database models: " + err.Error())
+		log.Fatal().Err(err).Msg("failed to migrate database models")
 	}
 }

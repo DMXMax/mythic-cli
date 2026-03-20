@@ -3,12 +3,11 @@ module github.com/DMXMax/mythic-cli
 go 1.25.5
 
 require (
-	github.com/DMXMax/mge v0.2.1
+	github.com/DMXMax/mge v0.2.6
 	github.com/peterh/liner v1.2.2
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
-	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.0
 )
 
@@ -24,4 +23,5 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
+	gorm.io/driver/sqlite v1.6.0 // indirect
 )
